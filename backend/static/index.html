@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickVPN — Защита без компромиссов</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Deep ink — pure dark, neutral with vivid accents */
+    --bg: #050507;
+    --bg2: #08080c;
+    --bg3: #0d0d12;
+    --surface: #101015;
+    --surface2: #17171f;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.11);
+    --text: #f3f1f7;
+    --text2: #a8a3b8;
+    --text3: #6d687f;
+    --card-bg: #0e0e13;
+    --card-best-bg: #14111d;
+    --accent: oklch(58% 0.13 255);
+    --accent-hi: oklch(66% 0.13 255);
+    --accent-lo: oklch(46% 0.14 258);
+    --accent2: oklch(70% 0.10 230);
+    --accent3: oklch(74% 0.10 220);
+    --accent-glow: oklch(58% 0.13 255 / 0.30);
+    --accent2-glow: oklch(70% 0.10 230 / 0.22);
+    --accent-text: #ffffff;
+    --red: oklch(65% 0.21 25);
+    --green: oklch(74% 0.16 155);
+    --font: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --display: 'IBM Plex Sans', system-ui, sans-serif;
+    --cab-font: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
+    --cab-display: 'Inter', 'IBM Plex Sans', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+    --radius: 12px;
+    --radius-lg: 20px;
+  }
+
+  html, body, #root {
+    height: 100%;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle grid only — no aurora */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 0%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 0%, transparent 75%);
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 99px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes letterIn {
+    from { opacity: 0; transform: translateY(40px) rotateX(-90deg); }
+    to { opacity: 1; transform: translateY(0) rotateX(0); }
+  }
+  .anim-letter {
+    display: inline-block;
+    opacity: 0;
+    animation: letterIn 0.6s cubic-bezier(.2,.7,.2,1) forwards;
+    transform-origin: 50% 100%;
+  }
+  .card-in {
+    opacity: 0;
+    animation: fadeUp 0.7s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  @keyframes priceFlip {
+    from { opacity: 0; transform: translateY(8px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .price-flip {
+    display: inline-block;
+    animation: priceFlip 0.35s cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+    50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 80px var(--accent-glow); }
+  }
+  @keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .fade-up { animation: fadeUp 0.5s ease forwards; }
+  .gradient-text {
+    background: linear-gradient(110deg, var(--accent-hi) 0%, var(--accent2) 45%, var(--accent3) 90%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 8s ease-in-out infinite;
+  }
+
+  .cab-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .cab-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  .nav-pad { padding: 0 32px; }
+  .page-pad { padding: 60px 24px 80px; }
+  .cab-pad { padding: 40px 24px 80px; }
+
+  @media (max-width: 720px) {
+    .cab-stat-grid { grid-template-columns: 1fr; }
+    .cab-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .cab-tabs::-webkit-scrollbar { display: none; }
+    .cab-tabs button { white-space: nowrap; flex-shrink: 0; }
+    .nav-pad { padding: 0 16px; }
+    .page-pad { padding: 32px 16px 60px; }
+    .cab-pad { padding: 24px 14px 60px; }
+    .hide-sm { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    method: options.method || 'GET',
+    headers: { 'content-type': 'application/json', ...(options.headers || {}) },
+    body: options.body,
+    credentials: 'same-origin',
+  });
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (!res.ok) {
+    const err = new Error((data && data.detail) || `HTTP ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+const Icon = ({ d, size = 18, stroke = 'currentColor', fill = 'none', strokeWidth = 1.8 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    {Array.isArray(d) ? d.map((p, i) => <path key={i} d={p} />) : <path d={d} />}
+  </svg>
+);
+
+const Icons = {
+  shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  eye: ['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
+  eyeOff: ['M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24', 'M1 1l22 22'],
+  user: ['M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+  mail: ['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6'],
+  lock: ['M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z', 'M7 11V7a5 5 0 0 1 10 0v4'],
+  check: 'M20 6L9 17l-5-5',
+  checkCircle: ['M22 11.08V12a10 10 0 1 1-5.93-9.14', 'M22 4L12 14.01l-3-3'],
+  wifi: ['M5 12.55a11 11 0 0 1 14.08 0', 'M1.42 9a16 16 0 0 1 21.16 0', 'M8.53 16.11a6 6 0 0 1 6.95 0', 'M12 20h.01'],
+  zap: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
+  globe: ['M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z', 'M2 12h20', 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'],
+  clock: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 6v6l4 2'],
+  arrowRight: 'M5 12h14M12 5l7 7-7 7',
+  logout: ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
+  chevronRight: 'M9 18l6-6-6-6',
+  download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
+  server: ['M2 3h20v7H2z', 'M2 14h20v7H2z', 'M6 7h.01', 'M6 18h.01'],
+  star: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  copy: ['M20 9H11a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2z', 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 0 2 2v1'],
+  creditCard: ['M1 4h22v16H1z', 'M1 10h22'],
+  info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 8h.01', 'M12 12v4'],
+  alertTriangle: ['M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z', 'M12 9v4', 'M12 17h.01'],
+};
+
+const PLANS = [
+  { id: 1,  period: '1 Месяц',   months: 1,  price: 109,  perMonth: 109, save: 0,  tag: null,         tagline: 'Попробовать',     hue: 220, accent: 'oklch(78% 0.04 250)' },
+  { id: 3,  period: '3 Месяца',  months: 3,  price: 299,  perMonth: 100, save: 8,  tag: 'Популярное', tagline: 'Лучший старт',    hue: 195, accent: 'oklch(75% 0.16 195)' },
+  { id: 6,  period: '6 Месяцев', months: 6,  price: 589,  perMonth: 98,  save: 10, tag: 'Выгодно',    tagline: 'Сэкономить',      hue: 295, accent: 'oklch(70% 0.20 295)' },
+  { id: 12, period: '12 Месяцев',months: 12, price: 1099, perMonth: 92,  save: 16, tag: 'Максимум',   tagline: 'Минимум за месяц',hue: 50,  accent: 'oklch(78% 0.16 60)'  },
+];
+
+const FEATURES = [
+  { icon: Icons.zap,    text: 'Скорость до 10 Гбит/с' },
+  { icon: Icons.wifi,   text: 'До 5 устройств одновременно' },
+  { icon: Icons.shield, text: 'Шифрование военного уровня' },
+];
+
+const PLAN_PERKS = [
+  'До 5 устройств одновременно',
+  'Без ограничений трафика',
+  'Поддержка 24/7',
+];
+
+
+const appStyles = {
+  container: {
+    position: 'relative',
+    zIndex: 1,
+    minHeight: '100vh',
+  },
+  nav: {
+    position: 'sticky', top: 0,
+    zIndex: 100,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    height: 64,
+    borderBottom: '1px solid var(--border)',
+    backdropFilter: 'blur(20px)',
+    background: 'rgba(12,12,12,0.78)',
+  },
+  logo: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    fontFamily: 'var(--mono)',
+    fontWeight: 700, fontSize: 18,
+    color: 'var(--text)',
+    letterSpacing: '-0.02em',
+  },
+  logoIcon: {
+    width: 36, height: 36,
+    background: 'transparent',
+    borderRadius: 8,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  navLinks: {
+    display: 'flex', alignItems: 'center', gap: 8,
+  },
+  btnPrimary: {
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+    padding: '10px 20px',
+    borderRadius: 10,
+    border: 'none',
+    background: 'var(--accent)',
+    color: 'var(--accent-text)',
+    fontFamily: 'var(--font)',
+    fontWeight: 600, fontSize: 14,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: '0 0 20px var(--accent-glow)',
+  },
+  btnSecondary: {
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+    padding: '10px 20px',
+    borderRadius: 10,
+    border: '1px solid var(--border2)',
+    background: 'transparent',
+    color: 'var(--text)',
+    fontFamily: 'var(--font)',
+    fontWeight: 500, fontSize: 14,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  btnGhost: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '8px 14px',
+    borderRadius: 8,
+    border: 'none',
+    background: 'transparent',
+    color: 'var(--text2)',
+    fontFamily: 'var(--font)',
+    fontWeight: 500, fontSize: 14,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+};
+
+
+function Logo({ onClick }) {
+  return (
+    <div style={{ ...appStyles.logo, cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+      Click<span style={{ color: 'var(--text2)', fontWeight: 400 }}>VPN</span>
+    </div>
+  );
+}
+
+function Navbar({ page, setPage, user, onLogout }) {
+  return (
+    <nav style={appStyles.nav} className="nav-pad">
+      <Logo onClick={() => setPage(user ? 'cabinet' : 'pricing')} />
+      <div style={appStyles.navLinks}>
+        {user ? (
+          <>
+            <button style={appStyles.btnGhost} onClick={() => setPage('pricing')}
+              onMouseEnter={e => e.target.style.color = 'var(--text)'}
+              onMouseLeave={e => e.target.style.color = 'var(--text2)'}>
+              Тарифы
+            </button>
+            <button style={appStyles.btnGhost} onClick={() => setPage('cabinet')}
+              onMouseEnter={e => e.target.style.color = 'var(--text)'}
+              onMouseLeave={e => e.target.style.color = 'var(--text2)'}>
+              <Icon d={Icons.user} size={15} />
+              Кабинет
+            </button>
+            <button style={appStyles.btnGhost} onClick={onLogout}
+              onMouseEnter={e => e.target.style.color = 'var(--red)'}
+              onMouseLeave={e => e.target.style.color = 'var(--text2)'}>
+              <Icon d={Icons.logout} size={15} />
+            </button>
+          </>
+        ) : (
+          <>
+            <button style={appStyles.btnGhost} onClick={() => setPage('pricing')}
+              onMouseEnter={e => e.target.style.color = 'var(--text)'}
+              onMouseLeave={e => e.target.style.color = 'var(--text2)'}>
+              Тарифы
+            </button>
+            <button style={appStyles.btnPrimary} onClick={() => setPage('auth')}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 40px var(--accent-glow)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)'}>
+              Войти
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function AuthShell({ icon, title, subtitle, children }) {
+  return (
+    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 440, animation: 'fadeUp 0.5s ease forwards' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 56, height: 56, background: 'var(--surface2)', borderRadius: 16, marginBottom: 20, boxShadow: '0 0 30px var(--accent-glow)' }}>
+            <Icon d={icon} size={24} stroke="var(--accent)" />
+          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, letterSpacing: '-0.03em', fontFamily: 'var(--display)' }}>{title}</h1>
+          {subtitle && <p style={{ color: 'var(--text2)', fontSize: 15, lineHeight: 1.5 }}>{subtitle}</p>}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ErrorMsg({ children }) {
+  if (!children) return null;
+  return (
+    <div style={{ padding: '10px 14px', borderRadius: 8, background: 'oklch(60% 0.2 25 / 0.1)', border: '1px solid oklch(60% 0.2 25 / 0.3)', color: 'var(--red)', fontSize: 13 }}>
+      {children}
+    </div>
+  );
+}
+
+function TextField({ icon, type = 'text', placeholder, value, onChange, autoFocus, autoComplete }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', background: 'var(--surface)', border: `1px solid ${focused ? 'var(--accent)' : 'var(--border2)'}`, borderRadius: 12, transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: focused ? '0 0 0 3px var(--accent-glow)' : 'none' }}>
+      {icon && <div style={{ padding: '0 14px', color: 'var(--text3)' }}><Icon d={icon} size={16} /></div>}
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        autoFocus={autoFocus} autoComplete={autoComplete}
+        onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+        style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 15, padding: '14px 16px', paddingLeft: icon ? 0 : 16 }} />
+    </div>
+  );
+}
+
+
+function AuthPage({ token, onSuccess, setPage }) {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
+  const [confirmState, setConfirmState] = useState(token ? 'confirming' : 'idle');
+
+  useEffect(() => {
+    if (!token) return;
+    api('/api/login/confirm', { method: 'POST', body: JSON.stringify({ token }) })
+      .then(() => { setConfirmState('ok'); setTimeout(() => onSuccess?.(), 800); })
+      .catch(err => { setConfirmState('fail'); setError(err.message || 'Ссылка устарела или уже использована'); });
+  }, [token]);
+
+  if (token && confirmState === 'confirming') {
+    return (
+      <AuthShell icon={Icons.lock} title="Входим..." subtitle="Секунду">
+        <div style={{ textAlign: 'center', padding: 20 }}><Spinner /></div>
+      </AuthShell>
+    );
+  }
+  if (token && confirmState === 'ok') {
+    return (
+      <AuthShell icon={Icons.checkCircle} title="Готово" subtitle="Открываем кабинет...">
+        <div style={{ textAlign: 'center', padding: 20, color: 'var(--green)' }}>
+          <Icon d={Icons.check} size={40} stroke="var(--green)" strokeWidth={3} />
+        </div>
+      </AuthShell>
+    );
+  }
+  if (token && confirmState === 'fail') {
+    return (
+      <AuthShell icon={Icons.alertTriangle} title="Не удалось войти" subtitle="Возможно, ссылка устарела или уже использована.">
+        <ErrorMsg>{error}</ErrorMsg>
+        <button onClick={() => { window.history.replaceState(null, '', '/auth'); setPage('auth'); window.location.reload(); }} style={{ ...appStyles.btnSecondary, width: '100%', justifyContent: 'center', padding: '12px', marginTop: 16 }}>
+          Запросить новую ссылку
+        </button>
+      </AuthShell>
+    );
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await api('/api/login/request', { method: 'POST', body: JSON.stringify({ email }) });
+      setSent(true);
+    } catch (err) {
+      setError(err.message || 'Не удалось отправить письмо');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <AuthShell icon={Icons.mail} title="Проверьте почту"
+        subtitle={<>Мы отправили ссылку на <strong style={{ color: 'var(--text)' }}>{email}</strong>. Перейдите по ней, чтобы войти. Ссылка действует 30 минут.</>}>
+        <div style={{ padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 18 }}>
+          Если письма нет в течение пары минут — проверьте папку «Спам».
+        </div>
+        <button onClick={() => { setSent(false); setEmail(''); }} style={{ ...appStyles.btnSecondary, width: '100%', justifyContent: 'center', padding: '12px' }}>
+          Другой email
+        </button>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell icon={Icons.mail} title="Вход в ClickVPN" subtitle="Введите email — пришлём ссылку для входа.">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <TextField icon={Icons.mail} type="email" placeholder="email@example.com"
+          value={email} onChange={setEmail} autoFocus autoComplete="email" />
+        <ErrorMsg>{error}</ErrorMsg>
+        <button type="submit" disabled={loading || !email}
+          style={{ ...appStyles.btnPrimary, justifyContent: 'center', padding: '14px 20px', fontSize: 15, borderRadius: 12, marginTop: 4, opacity: (loading || !email) ? 0.5 : 1 }}>
+          {loading ? <Spinner /> : 'Получить ссылку'}
+        </button>
+      </form>
+      <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', marginTop: 16, lineHeight: 1.5 }}>
+        Без паролей. Каждый вход — одноразовая ссылка на ваш email.
+      </div>
+    </AuthShell>
+  );
+}
+
+
+const PALETTES = [
+  { id: 'blue',     name: 'Полуночный синий', swatch: '#3a64d9', accent: 'oklch(58% 0.13 255)', hi: 'oklch(66% 0.13 255)', lo: 'oklch(46% 0.14 258)', glow: 'oklch(58% 0.13 255 / 0.30)' },
+  { id: 'teal',     name: 'Океан',            swatch: '#1aa18a', accent: 'oklch(62% 0.12 190)', hi: 'oklch(70% 0.12 188)', lo: 'oklch(50% 0.13 192)', glow: 'oklch(62% 0.12 190 / 0.30)' },
+  { id: 'violet',   name: 'Сумерки',          swatch: '#7e63d6', accent: 'oklch(62% 0.16 285)', hi: 'oklch(70% 0.15 285)', lo: 'oklch(50% 0.18 285)', glow: 'oklch(62% 0.16 285 / 0.30)' },
+  { id: 'amber',    name: 'Латунь',           swatch: '#c98a3d', accent: 'oklch(70% 0.13 70)',  hi: 'oklch(78% 0.13 75)',  lo: 'oklch(58% 0.14 60)',  glow: 'oklch(70% 0.13 70 / 0.30)'  },
+  { id: 'rose',     name: 'Закат',            swatch: '#cc5673', accent: 'oklch(64% 0.16 10)',  hi: 'oklch(72% 0.15 12)',  lo: 'oklch(52% 0.18 8)',   glow: 'oklch(64% 0.16 10 / 0.30)'  },
+  { id: 'mono',     name: 'Графит',           swatch: '#9aa3b2', accent: 'oklch(70% 0.02 250)', hi: 'oklch(82% 0.01 250)', lo: 'oklch(54% 0.02 250)', glow: 'oklch(70% 0.02 250 / 0.22)' },
+];
+
+const HEADLINES = [
+  { id: 'speed',    line1: 'Скорость, приватность',    line2: 'и ничего лишнего' },
+  { id: 'free',     line1: 'Свободный интернет',        line2: '' },
+  { id: 'simple',   line1: 'Подключение в один клик —',line2: 'без рекламы и лимитов' },
+  { id: 'home',     line1: 'Интернет, как дома —',     line2: 'где бы вы ни были' },
+  { id: 'fast',     line1: 'Быстрее, чем кажется.',    line2: 'Тише, чем замечают' },
+  { id: 'border',   line1: 'Без границ.',              line2: 'Без следов' },
+];
+
+const CAB_FONTS = [
+  { id: 'inter',    name: 'Inter',         font: "'Inter', 'IBM Plex Sans', system-ui, sans-serif", display: "'Inter', 'IBM Plex Sans', system-ui, sans-serif", import: 'Inter:wght@400;500;600;700;800' },
+  { id: 'manrope',  name: 'Manrope',       font: "'Manrope', system-ui, sans-serif", display: "'Manrope', system-ui, sans-serif", import: 'Manrope:wght@400;500;600;700;800' },
+  { id: 'sora',     name: 'Sora',          font: "'Sora', system-ui, sans-serif", display: "'Sora', system-ui, sans-serif", import: 'Sora:wght@400;500;600;700;800' },
+  { id: 'plex',     name: 'IBM Plex Sans', font: "'IBM Plex Sans', system-ui, sans-serif", display: "'IBM Plex Sans', system-ui, sans-serif", import: 'IBM+Plex+Sans:wght@400;500;600;700' },
+  { id: 'spaceg',   name: 'Space Grotesk', font: "'Space Grotesk', system-ui, sans-serif", display: "'Space Grotesk', system-ui, sans-serif", import: 'Space+Grotesk:wght@400;500;600;700' },
+];
+
+function loadFontOnce(family) {
+  const id = 'gf-' + family.replace(/[^a-z0-9]/gi, '');
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id; link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${family}&display=swap`;
+  document.head.appendChild(link);
+}
+
+function applyCabFont(f) {
+  loadFontOnce(f.import);
+  const r = document.documentElement;
+  r.style.setProperty('--cab-font', f.font);
+  r.style.setProperty('--cab-display', f.display);
+}
+
+function applyPalette(p) {
+  const r = document.documentElement;
+  r.style.setProperty('--accent',       p.accent);
+  r.style.setProperty('--accent-hi',    p.hi);
+  r.style.setProperty('--accent-lo',    p.lo);
+  r.style.setProperty('--accent-glow',  p.glow);
+}
+
+
+function useStyleSettings() {
+  const palette = PALETTES.find(p => p.id === 'mono') || PALETTES[0];
+  const headline = HEADLINES.find(h => h.id === 'free') || HEADLINES[0];
+  const cab = CAB_FONTS.find(f => f.id === 'inter') || CAB_FONTS[0];
+  useEffect(() => { applyPalette(palette); applyCabFont(cab); }, []);
+  return { palette, headline, cab };
+}
+
+function PricingPage({ setPage, user, refreshUser }) {
+  const [selected, setSelected] = useState(3);
+  const [payingMonths, setPayingMonths] = useState(null);
+  const plan = PLANS.find(p => p.months === selected) || PLANS[0];
+  const { palette, headline } = useStyleSettings();
+
+  const handleBuy = (months) => {
+    if (!user) { setPage('auth'); return; }
+    setPayingMonths(months);
+  };
+
+  const cssVars = {
+    '--c-accent':    palette.accent,
+    '--c-accent-hi': palette.hi,
+    '--c-accent-lo': palette.lo,
+    '--c-glow':      palette.glow,
+  };
+
+  return (
+    <div className="page-pad" style={{ maxWidth: 1100, margin: '0 auto', animation: 'fadeUp 0.5s ease forwards' }}>
+      <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <h1 style={{ fontSize: 'clamp(40px, 6vw, 68px)', fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 1.02, fontFamily: 'var(--display)', marginBottom: 18 }}>
+          {headline.line1.split('').map((ch, i) => (
+            <span key={'a'+i} className="anim-letter" style={{ animationDelay: `${i * 30}ms` }}>{ch === ' ' ? '\u00A0' : ch}</span>
+          ))}
+          {headline.line2 && (<><br /><span className="gradient-text">
+            {headline.line2.split('').map((ch, i) => (
+              <span key={'b'+i} className="anim-letter" style={{ animationDelay: `${(i + headline.line1.length + 2) * 30}ms` }}>{ch === ' ' ? '\u00A0' : ch}</span>
+            ))}</span></>)}
+        </h1>
+        <p style={{ maxWidth: 560, margin: '0 auto', fontSize: 17, lineHeight: 1.55, color: 'var(--text2)' }}>
+          Один ключ — все устройства. Без рекламы, без лимитов. Подключение в пару кликов.
+        </p>
+      </div>
+
+      <div className="card-in" style={{ animationDelay: '1100ms', maxWidth: 560, margin: '0 auto', ...cssVars }}>
+        {/* segmented month selector */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 16, padding: 5, marginBottom: 22,
+        }}>
+          {PLANS.map(p => {
+            const isSel = p.months === selected;
+            return (
+              <button key={p.id} onClick={() => setSelected(p.months)} style={{
+                position: 'relative',
+                padding: '12px 6px', borderRadius: 12, border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font)',
+                background: isSel ? 'var(--c-accent)' : 'transparent',
+                color: isSel ? '#fff' : 'var(--text2)',
+                transition: 'background 0.2s ease, color 0.2s ease',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              }}>
+                <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+                  {p.period}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* the one card */}
+        <div style={{
+          position: 'relative',
+          borderRadius: 22,
+          background: 'linear-gradient(180deg, color-mix(in oklab, var(--c-accent), transparent 92%), color-mix(in oklab, var(--c-accent), transparent 99%) 60%, transparent), var(--card-best-bg)',
+          border: '1px solid var(--c-accent)',
+          boxShadow: '0 24px 70px var(--c-glow), 0 0 0 3px color-mix(in oklab, var(--c-accent), transparent 86%)',
+          overflow: 'hidden',
+          transition: 'background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease',
+        }}>
+          <div style={{ position: 'absolute', top: -80, right: -40, width: 260, height: 260, background: 'radial-gradient(circle, var(--c-glow) 0%, transparent 65%)', filter: 'blur(20px)', pointerEvents: 'none' }} />
+
+          {/* (ribbon removed) */}
+
+          <div style={{ padding: '26px 28px 28px' }}>
+
+            {/* hero per-month */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+              <span key={plan.months} className="price-flip" style={{ fontSize: 88, fontWeight: 800, fontFamily: 'var(--display)', color: '#fff', letterSpacing: '-0.05em', lineHeight: 1 }}>
+                {plan.perMonth}
+              </span>
+              <span style={{ fontSize: 28, fontWeight: 600, color: 'var(--text2)' }}>₽</span>
+              <span style={{ fontSize: 15, color: 'var(--text3)', marginLeft: 4 }}>/мес</span>
+            </div>
+
+            <div style={{ fontSize: 14, color: 'var(--text3)', marginBottom: 24 }}>
+              Итого <strong style={{ color: 'var(--text2)', fontWeight: 600 }}>{plan.price.toLocaleString('ru')} ₽</strong> за {plan.months} {plan.months === 1 ? 'месяц' : plan.months < 5 ? 'месяца' : 'месяцев'}
+              {plan.save > 0 && (
+                <span style={{ color: 'var(--text3)', textDecoration: 'line-through', marginLeft: 10 }}>
+                  {(109 * plan.months).toLocaleString('ru')} ₽
+                </span>
+              )}
+            </div>
+
+            <div style={{ height: 1, background: 'var(--border)', margin: '0 0 18px' }} />
+
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, padding: 0 }}>
+              {PLAN_PERKS.map(p => (
+                <li key={p} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13.5, color: 'var(--text2)', lineHeight: 1.4 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: 18, height: 18, borderRadius: 99, background: 'var(--c-accent)', color: '#fff', marginTop: 1 }}>
+                    <Icon d={Icons.check} size={11} strokeWidth={3} />
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleBuy(plan.months)}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                borderRadius: 14,
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font)',
+                fontWeight: 700,
+                fontSize: 15,
+                letterSpacing: '-0.01em',
+                background: 'linear-gradient(135deg, var(--c-accent-hi), var(--c-accent-lo))',
+                color: '#fff',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                boxShadow: '0 10px 32px var(--c-glow)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              Подключить за {plan.price.toLocaleString('ru')} ₽
+              <Icon d={Icons.arrowRight} size={16} strokeWidth={2.2} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {payingMonths !== null && (
+        <PaymentModal
+          months={payingMonths}
+          amountRub={PLANS.find(p => p.months === payingMonths)?.price || 0}
+          onClose={() => setPayingMonths(null)}
+          onSuccess={async () => { setPayingMonths(null); await refreshUser?.(); setPage('cabinet'); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function PlanCard({ plan, selected, onClick, onBuy }) {
+  const isFeatured = plan.tag === 'Популярное';
+  const h = plan.hue;
+  const isNeutral = h === 220;
+  const cssVars = isNeutral ? {
+    '--c-accent':    'oklch(80% 0.03 250)',
+    '--c-accent-hi': 'oklch(88% 0.02 250)',
+    '--c-accent-lo': 'oklch(60% 0.02 250)',
+    '--c-glow':      'oklch(80% 0.03 250 / 0.18)',
+    '--c-bg-sel':    'linear-gradient(180deg, oklch(80% 0.03 250 / 0.06), transparent 60%), var(--card-best-bg)',
+  } : {
+    '--c-accent':    `oklch(70% 0.18 ${h})`,
+    '--c-accent-hi': `oklch(78% 0.16 ${h})`,
+    '--c-accent-lo': `oklch(56% 0.22 ${h})`,
+    '--c-glow':      `oklch(70% 0.18 ${h} / 0.35)`,
+    '--c-bg-sel':    `linear-gradient(180deg, oklch(70% 0.18 ${h} / 0.10), oklch(70% 0.18 ${h} / 0.02) 60%, transparent), var(--card-best-bg)`,
+  };
+
+  return (
+    <div onClick={onClick} style={{
+      ...cssVars,
+      position: 'relative',
+      borderRadius: 22,
+      cursor: 'pointer',
+      background: selected ? 'var(--c-bg-sel)' : 'var(--card-bg)',
+      border: selected ? '1px solid var(--c-accent)' : '1px solid var(--border)',
+      transition: 'transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease',
+      boxShadow: selected
+        ? '0 24px 70px var(--c-glow), 0 0 0 4px var(--c-glow)'
+        : '0 6px 24px rgba(0,0,0,0.25)',
+      transform: selected ? 'translateY(-6px)' : 'translateY(0)',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 360,
+    }}
+      onMouseEnter={e => { if (!selected) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { if (!selected) e.currentTarget.style.transform = 'translateY(0)'; }}
+    >
+      {/* corner glow for selected */}
+      {selected && (
+        <div style={{ position: 'absolute', top: -80, right: -40, width: 220, height: 220, background: 'radial-gradient(circle, var(--c-glow) 0%, transparent 65%)', filter: 'blur(20px)', pointerEvents: 'none' }} />
+      )}
+
+      {/* top ribbon */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px 0', minHeight: 36 }}>
+        {plan.tag ? (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            padding: '4px 10px', borderRadius: 99,
+            background: isFeatured ? 'var(--c-accent)' : 'rgba(255,255,255,0.08)',
+            color: isFeatured ? '#fff' : 'var(--text)',
+            border: isFeatured ? 'none' : '1px solid var(--border2)',
+          }}>
+            {isFeatured && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', boxShadow: '0 0 8px #fff' }} />}
+            {plan.tag}
+          </span>
+        ) : <span />}
+        {plan.save > 0 && (
+          <span style={{
+            fontSize: 11, fontWeight: 700, fontFamily: 'var(--mono)',
+            color: 'var(--green)',
+            padding: '4px 8px', borderRadius: 6,
+            background: 'oklch(74% 0.16 155 / 0.12)',
+          }}>−{plan.save}%</span>
+        )}
+      </div>
+
+      <div style={{ padding: '14px 22px 22px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--display)', letterSpacing: '-0.02em' }}>
+            {plan.months}
+          </span>
+          <span style={{ fontSize: 14, color: 'var(--text2)' }}>
+            {plan.months === 1 ? 'месяц' : plan.months < 5 ? 'месяца' : 'месяцев'}
+          </span>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 18, fontFamily: 'var(--mono)' }}>
+          {plan.tagline}
+        </div>
+
+        {/* per-month is the hero number */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
+          <span style={{ fontSize: 44, fontWeight: 800, fontFamily: 'var(--display)', color: selected ? '#fff' : 'var(--text)', letterSpacing: '-0.04em', lineHeight: 1 }}>
+            {plan.perMonth}
+          </span>
+          <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text2)' }}>₽</span>
+          <span style={{ fontSize: 13, color: 'var(--text3)', marginLeft: 2 }}>/мес</span>
+        </div>
+
+        {/* total — secondary */}
+        <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 20 }}>
+          Итого <strong style={{ color: 'var(--text2)', fontWeight: 600 }}>{plan.price.toLocaleString('ru')} ₽</strong>
+          {plan.save > 0 && (
+            <span style={{ color: 'var(--text3)', textDecoration: 'line-through', marginLeft: 8 }}>
+              {(plan.perMonth === 109 ? plan.price : 109 * plan.months).toLocaleString('ru')} ₽
+            </span>
+          )}
+        </div>
+
+        <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
+
+        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, padding: 0 }}>
+          {PLAN_PERKS.map(p => (
+            <li key={p} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text2)', lineHeight: 1.4 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: 16, height: 16, borderRadius: 99, background: selected ? 'var(--c-accent)' : 'var(--surface2)', color: selected ? '#fff' : 'var(--c-accent)', marginTop: 1 }}>
+                <Icon d={Icons.check} size={10} strokeWidth={3} />
+              </span>
+              {p}
+            </li>
+          ))}
+        </ul>
+
+        <button
+          onClick={(e) => { e.stopPropagation(); onBuy && onBuy(); }}
+          style={{
+            marginTop: 'auto',
+            padding: '14px 20px',
+            borderRadius: 12,
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'var(--font)',
+            fontWeight: 700,
+            fontSize: 14,
+            letterSpacing: '-0.01em',
+            background: selected
+              ? 'linear-gradient(135deg, var(--c-accent-hi), var(--c-accent-lo))'
+              : 'rgba(255,255,255,0.06)',
+            color: selected ? '#fff' : 'var(--text)',
+            border: selected ? 'none' : '1px solid var(--border2)',
+            transition: 'all 0.2s',
+            boxShadow: selected ? '0 8px 24px var(--c-glow)' : 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          Подключить
+          <Icon d={Icons.arrowRight} size={14} strokeWidth={2.2} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CabinetPage({ user, setPage, refreshUser }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [subs, setSubs] = useState(null);
+
+  const loadSubs = async () => {
+    try {
+      const data = await api('/api/subscriptions');
+      setSubs(data.subscriptions || []);
+    } catch {
+      setSubs([]);
+    }
+  };
+
+  useEffect(() => { loadSubs(); }, []);
+
+  const subsArr = subs || [];
+  const primary = subsArr.length > 0
+    ? subsArr.reduce((a, b) => ((b.expire_at || '').localeCompare(a.expire_at || '') > 0 ? b : a))
+    : null;
+  const daysLeft = primary ? computeDaysLeft(primary.expire_at) : 0;
+  const hasActivePlan = daysLeft > 0;
+
+  const tabs = [
+    { id: 'overview', label: 'Обзор' },
+    { id: 'devices', label: 'Устройства' },
+    { id: 'billing', label: 'Платежи' },
+    { id: 'settings', label: 'Настройки' },
+  ];
+
+  return (
+    <div className="cab-pad" style={{ maxWidth: 960, margin: '0 auto', animation: 'fadeUp 0.5s ease forwards', fontFamily: 'var(--cab-font)' }}>
+      <div className="cab-tabs">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+            padding: '10px 18px', border: 'none', background: 'none', cursor: 'pointer',
+            fontFamily: 'var(--font)', fontSize: 14, fontWeight: 500,
+            color: activeTab === t.id ? 'var(--text)' : 'var(--text2)',
+            borderBottom: activeTab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
+            marginBottom: -1, transition: 'all 0.2s',
+          }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ animation: 'slideIn 0.3s ease forwards' }} key={activeTab}>
+        {activeTab === 'overview' && <OverviewTab primary={primary} loading={subs === null} setPage={setPage} user={user} refreshUser={refreshUser} />}
+        {activeTab === 'devices' && <DevicesTab primary={primary} />}
+        {activeTab === 'billing' && <BillingTab user={user} hasActivePlan={hasActivePlan} setPage={setPage} refreshUser={refreshUser} />}
+        {activeTab === 'settings' && <SettingsTab user={user} />}
+      </div>
+    </div>
+  );
+}
+
+function computeDaysLeft(iso) {
+  if (!iso) return 0;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (isNaN(ms) || ms <= 0) return 0;
+  return Math.ceil(ms / (1000 * 60 * 60 * 24));
+}
+
+function pluralDays(n) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'день';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
+  return 'дней';
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatBytes(n) {
+  if (!n || n <= 0) return '0 ГБ';
+  const gb = n / (1024 ** 3);
+  if (gb < 0.1) return (n / (1024 ** 2)).toFixed(1) + ' МБ';
+  return gb.toFixed(gb < 10 ? 2 : 1) + ' ГБ';
+}
+
+function OverviewTab({ primary, loading, setPage, user, refreshUser }) {
+  const [copied, setCopied] = useState(false);
+  const [howtoOpen, setHowtoOpen] = useState(false);
+  const [extendOpen, setExtendOpen] = useState(false);
+
+  if (loading) {
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text3)' }}><Spinner /></div>;
+  }
+
+  if (!primary) {
+    return (
+      <div style={{ padding: '40px', background: 'linear-gradient(135deg, rgba(212,180,131,0.06), rgba(255,255,255,0.015))', border: '1px solid var(--border)', borderRadius: 20, textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+        <h3 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Нет активной подписки</h3>
+        <p style={{ color: 'var(--text2)', fontSize: 15, marginBottom: 24 }}>Выберите план, чтобы получить VPN-ключ и доступ ко всем серверам</p>
+        <button onClick={() => setPage('pricing')} style={{ ...appStyles.btnPrimary, padding: '14px 32px', fontSize: 15 }}>
+          <Icon d={Icons.arrowRight} size={16} /> Смотреть тарифы
+        </button>
+      </div>
+    );
+  }
+
+  const days = computeDaysLeft(primary.expire_at);
+  const isActive = days > 0;
+
+  const handleCopy = () => {
+    if (!primary.subscription_url) return;
+    navigator.clipboard.writeText(primary.subscription_url).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="cab-stat-grid">
+        <div style={{ padding: '22px 22px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+            <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'var(--cab-display)' }}>{isActive ? days : '—'}</div>
+            <div style={{ fontSize: 15, color: 'var(--text2)', fontWeight: 500 }}>
+              {isActive ? (days === 1 ? 'день' : days < 5 ? 'дня' : 'дней') : 'нет подписки'}
+            </div>
+          </div>
+          {isActive && (
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 14 }}>До {formatDate(primary.expire_at)}</div>
+          )}
+        </div>
+        <button onClick={() => setExtendOpen(true)} style={{
+          padding: '20px', background: 'transparent', border: '2.5px solid var(--accent)', borderRadius: 14,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10,
+          cursor: 'pointer', color: 'var(--accent)', fontFamily: 'var(--font)',
+          transition: 'background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent-text)'; e.currentTarget.querySelectorAll('svg path').forEach(p => p.setAttribute('stroke', 'var(--accent-text)')); e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 12px 32px var(--accent-glow)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.querySelectorAll('svg path').forEach(p => p.setAttribute('stroke', 'var(--accent)')); e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+          <Icon d={Icons.zap} size={22} stroke="var(--accent)" />
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>Продлить подписку</span>
+        </button>
+      </div>
+
+      {primary.subscription_url && (
+        <div style={{ padding: '24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Icon d={Icons.lock} size={14} stroke="var(--accent)" />
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Ваш VPN-ключ</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg2)', borderRadius: 10, padding: '12px 16px' }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--accent2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{primary.subscription_url}</span>
+            <button onClick={handleCopy} style={{ ...appStyles.btnGhost, padding: '6px 12px', border: '1px solid var(--border2)', borderRadius: 8, color: copied ? 'var(--green)' : 'var(--text2)', flexShrink: 0 }}>
+              <Icon d={copied ? Icons.checkCircle : Icons.copy} size={14} />
+              {copied ? 'Скопировано!' : 'Копировать'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {user && !user.telegram_linked && <TelegramLinkBanner />}
+
+      <button onClick={() => setHowtoOpen(true)} style={{ ...appStyles.btnSecondary, padding: '14px', justifyContent: 'center' }}>
+        <Icon d={Icons.download} size={15} /> Подключить VPN
+      </button>
+
+      {howtoOpen && <ConnectModal subUrl={primary.subscription_url} onClose={() => setHowtoOpen(false)} />}
+      {extendOpen && <ExtendModal onClose={() => setExtendOpen(false)} onSuccess={async () => { setExtendOpen(false); await refreshUser?.(); }} />}
+    </div>
+  );
+}
+
+function ExtendModal({ onClose, onSuccess }) {
+  const [chosen, setChosen] = useState(null);
+
+  if (chosen !== null) {
+    const plan = PLANS.find(p => p.months === chosen);
+    return (
+      <PaymentModal
+        months={chosen}
+        amountRub={plan?.price || 0}
+        onClose={onClose}
+        onSuccess={onSuccess}
+      />
+    );
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, background: 'var(--surface)', border: '1px solid var(--border2)', borderRadius: 20, padding: 24, animation: 'fadeUp 0.3s ease forwards' }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text3)', letterSpacing: '0.15em', marginBottom: 8 }}>
+          ПРОДЛЕНИЕ
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--display)', marginBottom: 16 }}>
+          На какой срок?
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {PLANS.map(p => {
+            const perMonth = Math.round(p.price / p.months);
+            return (
+              <button key={p.id} onClick={() => setChosen(p.months)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--bg2)', border: '1px solid var(--border2)', borderRadius: 12, cursor: 'pointer', color: 'var(--text)', fontFamily: 'var(--font)', transition: 'border-color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border2)'}>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>{p.period}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>{perMonth}₽ / мес{p.save > 0 ? <span style={{ color: 'var(--green)', marginLeft: 6 }}>−{p.save}%</span> : null}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16, fontWeight: 700 }}>{p.price.toLocaleString('ru')} ₽</span>
+                  <Icon d={Icons.arrowRight} size={14} stroke="var(--text3)" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'transparent', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 14, fontFamily: 'var(--font)' }}>
+          Отмена
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TelegramLinkBanner() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLink = async () => {
+    setError('');
+    setBusy(true);
+    try {
+      const data = await api('/api/telegram/link/start', { method: 'POST' });
+      if (data.deeplink_url) window.open(data.deeplink_url, '_blank', 'noopener');
+    } catch (err) {
+      setError(err.message || 'Не удалось запустить привязку');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: '16px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>Привязать Telegram</div>
+        <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+          Если у вас уже есть подписка в нашем боте — она перенесётся в этот аккаунт.
+        </div>
+        {error && <div style={{ fontSize: 12, color: 'var(--red)', marginTop: 4 }}>{error}</div>}
+      </div>
+      <button onClick={handleLink} disabled={busy} style={{ ...appStyles.btnPrimary, padding: '8px 16px', fontSize: 13, flexShrink: 0 }}>
+        {busy ? <Spinner /> : 'Привязать'}
+      </button>
+    </div>
+  );
+}
+
+const APPS = [
+  { os: 'Windows', name: 'Hiddify', url: '#', hint: 'Импорт ссылки автоматически — просто откройте подписку' },
+  { os: 'macOS',   name: 'Hiddify', url: '#', hint: 'Импорт ссылки автоматически' },
+  { os: 'iOS',     name: 'V2Box',   url: '#', hint: 'App Store, импорт через подписку' },
+  { os: 'Android', name: 'Hiddify', url: '#', hint: 'Google Play или APK, импорт через подписку' },
+  { os: 'Linux',   name: 'Hiddify', url: '#', hint: 'AppImage / Flatpak' },
+];
+
+function ConnectModal({ subUrl, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    if (!subUrl) return;
+    navigator.clipboard.writeText(subUrl).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, maxHeight: '88vh', overflowY: 'auto', background: 'var(--surface)', border: '1px solid var(--border2)', borderRadius: 20, padding: 24, animation: 'fadeUp 0.3s ease forwards' }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text3)', letterSpacing: '0.15em', marginBottom: 8 }}>
+          ИНСТРУКЦИЯ
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--display)', marginBottom: 8 }}>
+          Как подключить VPN
+        </h2>
+        <p style={{ color: 'var(--text2)', fontSize: 14, marginBottom: 20 }}>
+          1. Установите приложение для своей системы. 2. Скопируйте ссылку-подписку. 3. Импортируйте её в приложение и подключитесь.
+        </p>
+
+        {subUrl && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'var(--mono)', marginBottom: 8 }}>ССЫЛКА-ПОДПИСКА</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg2)', borderRadius: 10, padding: '12px 14px' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--accent2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subUrl}</span>
+              <button onClick={handleCopy} style={{ ...appStyles.btnGhost, padding: '6px 12px', border: '1px solid var(--border2)', borderRadius: 8, color: copied ? 'var(--green)' : 'var(--text2)', flexShrink: 0 }}>
+                <Icon d={copied ? Icons.checkCircle : Icons.copy} size={13} />
+                {copied ? 'Скопировано' : 'Копировать'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          {APPS.map(app => (
+            <a key={app.os} href={app.url} target="_blank" rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg2)', border: '1px solid var(--border2)', borderRadius: 10, textDecoration: 'none', color: 'var(--text)', cursor: 'pointer', transition: 'border-color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border2)'}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{app.os} · {app.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>{app.hint}</div>
+              </div>
+              <Icon d={Icons.arrowRight} size={14} stroke="var(--text3)" />
+            </a>
+          ))}
+        </div>
+
+        <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'transparent', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 14, fontFamily: 'var(--font)' }}>
+          Закрыть
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+function BillingTab({ user, hasActivePlan, refreshUser, setPage }) {
+  const [history, setHistory] = useState(null);
+
+  const loadHistory = async () => {
+    try {
+      const data = await api('/api/payments');
+      setHistory(data.payments || []);
+    } catch {
+      setHistory([]);
+    }
+  };
+
+  useEffect(() => { loadHistory(); }, []);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>История платежей</div>
+        {history === null ? (
+          <div style={{ padding: '32px', textAlign: 'center' }}><Spinner /></div>
+        ) : history.length === 0 ? (
+          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text3)', fontSize: 14, background: 'var(--surface)', borderRadius: 14 }}>
+            История пуста
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {history.map(h => {
+              const desc = `Подписка · ${h.plan_months} мес · ${providerLabel(h.provider)}`;
+              const sign = h.status === 'paid' ? '−' : '';
+              const color = h.status === 'paid'
+                ? 'var(--text)'
+                : (h.status === 'failed' ? 'var(--red)' : 'var(--text3)');
+              const dateStr = new Date((h.paid_at || h.created_at) * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+              return (
+                <div key={h.order_id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{desc}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>{dateStr} · {statusLabel(h.status)}</div>
+                  </div>
+                  <div style={{ fontFamily: 'var(--mono)', fontWeight: 700, color, flexShrink: 0 }}>
+                    {sign}{h.amount_rub.toLocaleString('ru')} ₽
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <button onClick={() => setPage('pricing')} style={{ ...appStyles.btnSecondary, justifyContent: 'center', padding: '14px' }}>
+        <Icon d={Icons.creditCard} size={15} /> Управление подпиской
+      </button>
+    </div>
+  );
+}
+
+function providerLabel(p) {
+  return ({ heleket: 'Крипта', platega_card: 'Карта', platega_sbp: 'СБП' })[p] || p;
+}
+function statusLabel(s) {
+  return ({ paid: 'Оплачено', pending: 'Ожидает', failed: 'Отменено' })[s] || s;
+}
+
+function DevicesTab({ primary }) {
+  const [devices, setDevices] = useState(null);
+  const [error, setError] = useState('');
+  const [removing, setRemoving] = useState(null);
+
+  const deviceLimit = primary?.device_limit;
+  const uuid = primary?.uuid;
+
+  const load = async () => {
+    if (!uuid) { setDevices([]); return; }
+    setError('');
+    try {
+      const data = await api(`/api/devices?uuid=${encodeURIComponent(uuid)}`);
+      setDevices(data.devices || []);
+    } catch (err) {
+      setError('Не удалось загрузить устройства');
+      setDevices([]);
+    }
+  };
+
+  useEffect(() => { load(); }, [uuid]);
+
+  const handleUnbind = async (hwid) => {
+    if (!confirm('Отвязать это устройство? Оно перестанет подключаться к VPN.')) return;
+    setRemoving(hwid);
+    try {
+      await api('/api/devices/delete', { method: 'POST', body: JSON.stringify({ hwid, uuid }) });
+      await load();
+    } catch (err) {
+      setError('Не удалось отвязать устройство');
+    } finally {
+      setRemoving(null);
+    }
+  };
+
+  if (!primary) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, color: 'var(--text2)' }}>
+        Сначала купите подписку — после этого здесь можно будет управлять устройствами.
+      </div>
+    );
+  }
+
+  if (devices === null) {
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text3)' }}><Spinner /></div>;
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 14, color: 'var(--text2)' }}>
+          Подключено: <strong style={{ color: 'var(--text)' }}>{devices.length}</strong>
+          {deviceLimit ? <> из <strong style={{ color: 'var(--text)' }}>{deviceLimit}</strong></> : null}
+        </div>
+        <button onClick={load} style={{ ...appStyles.btnGhost }}>Обновить</button>
+      </div>
+
+      {error && (
+        <div style={{ padding: '10px 14px', borderRadius: 8, background: 'oklch(60% 0.2 25 / 0.1)', border: '1px solid oklch(60% 0.2 25 / 0.3)', color: 'var(--red)', fontSize: 13 }}>
+          {error}
+        </div>
+      )}
+
+      {devices.length === 0 ? (
+        <div style={{ padding: '40px', textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14 }}>
+          <div style={{ fontSize: 36, marginBottom: 10 }}>📱</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Нет подключённых устройств</div>
+          <div style={{ fontSize: 14, color: 'var(--text2)' }}>Установи VPN-приложение и подключись через свою ссылку — устройство появится здесь.</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {devices.map(d => {
+            const title = d.deviceModel || d.platform || 'Устройство';
+            const subParts = [];
+            if (d.platform && d.platform !== title) subParts.push(d.platform);
+            if (d.osVersion) subParts.push(d.osVersion);
+            const sub = subParts.join(' · ');
+            return (
+              <div key={d.hwid} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', flexShrink: 0 }}>
+                  <Icon d={Icons.wifi} size={16} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'var(--mono)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {sub || d.hwid.slice(0, 16)}
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', flexShrink: 0 }}>{formatDate(d.createdAt)}</div>
+                <button onClick={() => handleUnbind(d.hwid)} disabled={removing === d.hwid}
+                  style={{ ...appStyles.btnGhost, color: 'var(--red)', border: '1px solid oklch(60% 0.2 25 / 0.3)', borderRadius: 8, padding: '6px 12px', fontSize: 13, opacity: removing === d.hwid ? 0.5 : 1 }}>
+                  {removing === d.hwid ? '...' : 'Отвязать'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SettingsTab({ user }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <ProfileCard user={user} />
+
+      <SettingRow label="Язык интерфейса" desc="Язык сайта и приложений">
+        <div style={{ fontSize: 14, color: 'var(--text2)' }}>Русский</div>
+      </SettingRow>
+    </div>
+  );
+}
+
+function ProfileCard({ user }) {
+  return (
+    <div style={{ padding: '20px 24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}>
+      <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 16 }}>Профиль</div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <ProfileRow label="Email"       value={user.email} copyable />
+        <ProfileRow label="ID аккаунта" value={user.username || '—'} copyable={!!user.username} />
+        <TelegramRow linked={!!user.telegram_linked} isLast />
+      </div>
+    </div>
+  );
+}
+
+function TelegramRow({ linked, isLast }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLink = async () => {
+    setError('');
+    setBusy(true);
+    try {
+      const data = await api('/api/telegram/link/start', { method: 'POST' });
+      if (data.deeplink_url) window.open(data.deeplink_url, '_blank', 'noopener');
+    } catch (err) {
+      setError(err.message || 'Не удалось запустить привязку');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleUnlink = async () => {
+    if (!confirm('Отвязать Telegram от этого аккаунта?')) return;
+    setBusy(true);
+    try {
+      await api('/api/telegram/unlink', { method: 'POST' });
+      window.location.reload();
+    } catch (err) {
+      setError(err.message || 'Не удалось отвязать');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '14px 0', borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div style={{ color: 'var(--text2)', fontSize: 14 }}>Telegram</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {linked ? (
+            <>
+              <span style={{ fontSize: 14, color: 'var(--green)', fontWeight: 600 }}>✓ Привязан</span>
+              <button onClick={handleUnlink} disabled={busy} style={{ ...appStyles.btnGhost, padding: '6px 12px', border: '1px solid var(--border2)', borderRadius: 8, fontSize: 13, color: 'var(--text2)' }}>
+                {busy ? <Spinner /> : 'Отвязать'}
+              </button>
+            </>
+          ) : (
+            <button onClick={handleLink} disabled={busy} style={{ ...appStyles.btnPrimary, padding: '6px 14px', fontSize: 13 }}>
+              {busy ? <Spinner /> : 'Привязать'}
+            </button>
+          )}
+        </div>
+      </div>
+      {error && <div style={{ fontSize: 12, color: 'var(--red)' }}>{error}</div>}
+    </div>
+  );
+}
+
+function ProfileRow({ label, value, copyable, isLast }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    if (!copyable) return;
+    navigator.clipboard.writeText(value).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: isLast ? 'none' : '1px solid var(--border)', gap: 16 }}>
+      <div style={{ color: 'var(--text2)', fontSize: 14 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 14, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
+        {copyable && (
+          <button onClick={handleCopy} title="Скопировать"
+            style={{ background: 'transparent', border: '1px solid var(--border2)', borderRadius: 6, padding: '4px 6px', cursor: 'pointer', color: copied ? 'var(--green)' : 'var(--text2)', flexShrink: 0 }}>
+            <Icon d={copied ? Icons.checkCircle : Icons.copy} size={13} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SettingRow({ label, desc, children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, gap: 24 }}>
+      <div>
+        <div style={{ fontWeight: 500, marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 13, color: 'var(--text2)' }}>{desc}</div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+      {[0,1,2].map(i => (
+        <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-text)', animation: `dotPulse 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+      ))}
+    </div>
+  );
+}
+
+const PAY_METHODS = [
+  { id: 'platega_card', label: 'Банковская карта',  hint: 'РФ карты, мгновенно' },
+  { id: 'platega_sbp',  label: 'СБП',               hint: 'Сбер/Тинькофф/любой банк' },
+  { id: 'heleket',      label: 'Криптовалюта',      hint: 'USDT / TON / BTC' },
+];
+
+function PaymentModal({ months, amountRub, onClose, onSuccess }) {
+  const [submitting, setSubmitting] = useState(null);
+  const [error, setError] = useState('');
+
+  const submit = async (provider) => {
+    setError('');
+    setSubmitting(provider);
+    try {
+      const data = await api('/api/subscription/buy', {
+        method: 'POST',
+        body: JSON.stringify({ months, provider }),
+      });
+      if (data.pay_url) {
+        window.location.href = data.pay_url;
+      } else if (data.ok) {
+        await onSuccess?.();
+      }
+    } catch (err) {
+      setError(err.message || 'Ошибка платежа');
+      setSubmitting(null);
+    }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 460, background: 'var(--surface)', border: '1px solid var(--border2)', borderRadius: 20, padding: 28, animation: 'fadeUp 0.3s ease forwards' }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text3)', letterSpacing: '0.15em', marginBottom: 8 }}>
+          ОПЛАТА ПОДПИСКИ
+        </div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, fontFamily: 'var(--display)', marginBottom: 20 }}>
+          Подписка на {months} {months === 1 ? 'месяц' : months < 5 ? 'месяца' : 'месяцев'}
+        </h2>
+
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 24 }}>
+          <span style={{ fontSize: 36, fontWeight: 800, fontFamily: 'var(--display)' }}>{amountRub.toLocaleString('ru')}</span>
+          <span style={{ fontSize: 18, color: 'var(--text2)' }}>₽</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          {PAY_METHODS.map(m => (
+            <button key={m.id} onClick={() => submit(m.id)} disabled={submitting !== null}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--bg2)', border: '1px solid var(--border2)', borderRadius: 12, color: 'var(--text)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: 500, opacity: submitting && submitting !== m.id ? 0.4 : 1, transition: 'all 0.15s' }}
+              onMouseEnter={e => { if (!submitting) e.currentTarget.style.borderColor = 'var(--accent)'; }}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border2)'}>
+              <div style={{ textAlign: 'left' }}>
+                <div>{m.label}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>{m.hint}</div>
+              </div>
+              {submitting === m.id ? <Spinner /> : <Icon d={Icons.arrowRight} size={16} stroke="var(--text3)" />}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div style={{ padding: '10px 14px', borderRadius: 8, background: 'oklch(60% 0.2 25 / 0.1)', border: '1px solid oklch(60% 0.2 25 / 0.3)', color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>
+            {error}
+          </div>
+        )}
+
+        <button onClick={onClose} style={{ width: '100%', padding: '12px', background: 'transparent', border: 'none', color: 'var(--text2)', cursor: 'pointer', fontSize: 14, fontFamily: 'var(--font)' }}>
+          Отмена
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const initialUrl = new URL(window.location.href);
+  const initialPath = initialUrl.pathname;
+  const initialToken = initialUrl.searchParams.get('token') || '';
+
+  const PAGE_TO_PATH = {
+    'pricing': '/',
+    'auth': '/auth',
+    'cabinet': '/cabinet',
+  };
+  const PATH_TO_PAGE = {
+    '/': 'pricing',
+    '/auth': 'auth',
+    '/cabinet': 'cabinet',
+  };
+
+  const firstPage = PATH_TO_PAGE[initialPath] || 'pricing';
+
+  const [page, setPage] = useState(firstPage);
+  const [token, setToken] = useState(initialToken);
+  const [user, setUser] = useState(null);
+  const [bootstrapping, setBootstrapping] = useState(true);
+
+  const navigate = (p) => {
+    const nextPath = PAGE_TO_PATH[p] || '/';
+    const cur = window.location.pathname + window.location.search;
+    if (cur !== nextPath) window.history.pushState({ page: p }, '', nextPath);
+    setPage(p);
+  };
+
+  useEffect(() => {
+    const onPop = () => {
+      const path = window.location.pathname;
+      const newPage = PATH_TO_PAGE[path] || 'pricing';
+      const newToken = new URL(window.location.href).searchParams.get('token') || '';
+      setToken(newToken);
+      setPage(newPage);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const refreshUser = async () => {
+    try {
+      const data = await api('/api/me');
+      setUser(data);
+      return data;
+    } catch {
+      setUser(null);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    refreshUser()
+      .then(data => {
+        if (data && firstPage === 'pricing') {
+          window.history.replaceState({ page: 'cabinet' }, '', '/cabinet');
+          setPage('cabinet');
+        }
+      })
+      .finally(() => setBootstrapping(false));
+  }, []);
+
+  const handleLogin = async () => {
+    const data = await refreshUser();
+    if (data) navigate('cabinet');
+    else navigate('login');
+  };
+
+  const handleLogout = async () => {
+    try { await api('/api/logout', { method: 'POST' }); } catch {}
+    setUser(null);
+    navigate('pricing');
+  };
+
+  if (bootstrapping) {
+    return (
+      <div style={{ ...appStyles.container, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spinner />
+      </div>
+    );
+  }
+
+  return (
+    <div style={appStyles.container}>
+      <Navbar page={page} setPage={navigate} user={user} onLogout={handleLogout} />
+      {page === 'auth'     && <AuthPage token={token} onSuccess={handleLogin} setPage={navigate} />}
+      {page === 'pricing'  && <PricingPage setPage={navigate} user={user} refreshUser={refreshUser} />}
+      {page === 'cabinet'  && user && <CabinetPage user={user} setPage={navigate} refreshUser={refreshUser} />}
+      {page === 'cabinet'  && !user && <AuthPage token={token} onSuccess={handleLogin} setPage={navigate} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
