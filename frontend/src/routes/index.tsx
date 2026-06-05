@@ -1,0 +1,417 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import {
+  Shield,
+  Zap,
+  Smartphone,
+  Infinity as InfinityIcon,
+  Globe2,
+  MessageCircle,
+  ChevronDown,
+  ArrowRight,
+  Check,
+  Sparkles,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/lib/i18n";
+
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "ClickVPN — Fast & Unlimited VPN" },
+      { name: "description", content: "One key for all devices. Simple setup, high speed, unlimited traffic." },
+      { property: "og:title", content: "ClickVPN — Fast & Unlimited VPN" },
+      { property: "og:description", content: "One key for all devices. Simple setup, high speed, unlimited traffic." },
+      { property: "og:type", content: "website" },
+    ],
+  }),
+  component: LandingPage,
+});
+
+const MONTHLY_BASE = 109;
+
+type Plan = {
+  months: 1 | 3 | 6 | 12;
+  price: number;
+  labelKey: "plan.1" | "plan.3" | "plan.6" | "plan.12";
+  badgeKey?: "plan.badge.deal" | "plan.badge.popular";
+  highlight?: boolean;
+};
+
+const PLANS: Plan[] = [
+  { months: 1, price: 109, labelKey: "plan.1" },
+  { months: 3, price: 299, labelKey: "plan.3" },
+  { months: 6, price: 589, labelKey: "plan.6", badgeKey: "plan.badge.deal", highlight: true },
+  { months: 12, price: 1099, labelKey: "plan.12", badgeKey: "plan.badge.popular" },
+];
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
+}
+
+function LandingPage() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Header />
+      <Hero />
+      <Pricing />
+      <Advantages />
+      <Faq />
+      <Footer />
+    </div>
+  );
+}
+
+function Header() {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  return (
+    <header className="sticky top-0 z-50">
+      <div className="mx-auto max-w-6xl px-4 pt-4">
+        <div className="glass flex items-center justify-between rounded-2xl px-4 py-2.5">
+          <Link to="/" className="flex items-center gap-2">
+            <Logo />
+            <span className="text-sm font-semibold tracking-tight">ClickVPN</span>
+          </Link>
+          <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+            <a href="#pricing" className="transition hover:text-foreground">{t("nav.pricing")}</a>
+            <a href="#features" className="transition hover:text-foreground">{t("nav.features")}</a>
+            <a href="#faq" className="transition hover:text-foreground">{t("nav.faq")}</a>
+          </nav>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium"
+              >
+                {t("nav.dashboard")}
+                <ArrowRight className="size-3.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  className="hidden rounded-xl px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground sm:inline-flex"
+                >
+                  {t("nav.signin")}
+                </Link>
+                <Link
+                  to="/auth"
+                  className="btn-primary inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium"
+                >
+                  {t("nav.connect")}
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Logo() {
+  return (
+    <div className="relative grid size-7 place-items-center rounded-lg bg-gradient-to-br from-white to-[oklch(0.78_0_0)] glow-primary">
+      <Shield className="size-3.5 text-primary-foreground" strokeWidth={2.5} />
+    </div>
+  );
+}
+
+function Hero() {
+  const { t } = useI18n();
+  return (
+    <section className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[600px] bg-aurora opacity-70" aria-hidden />
+
+      <div className="relative mx-auto max-w-6xl px-4 pt-24 pb-24 sm:pt-32 sm:pb-32">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="glass mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-muted-foreground">
+            <Sparkles className="size-3.5 text-primary" />
+            {t("hero.badge")}
+          </div>
+
+          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
+            <span className="gradient-text">{t("hero.h1.1")}</span>
+            <br />
+            {t("hero.h1.2")}
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-xl text-pretty text-base text-muted-foreground sm:text-lg">
+            {t("hero.p")}
+          </p>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#pricing"
+              className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium"
+            >
+              {t("hero.cta")}
+              <ArrowRight className="size-4" />
+            </a>
+            <Link
+              to="/auth"
+              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-foreground/90 transition hover:text-foreground"
+            >
+              {t("hero.signin")}
+            </Link>
+          </div>
+
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted-foreground">
+            <Pill>{t("hero.pill.devices")}</Pill>
+            <Pill>{t("hero.pill.traffic")}</Pill>
+            <Pill>{t("hero.pill.locations")}</Pill>
+            <Pill>{t("hero.pill.payment")}</Pill>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="size-1 rounded-full bg-primary/80" />
+      {children}
+    </span>
+  );
+}
+
+function Pricing() {
+  const { t } = useI18n();
+  const [selected, setSelected] = useState<Plan["months"]>(6);
+  const selectedPlan = useMemo(() => PLANS.find((p) => p.months === selected)!, [selected]);
+
+  const regular = selectedPlan.months * MONTHLY_BASE;
+  const savings = regular - selectedPlan.price;
+
+  const planFeatures = [
+    t("plan.feat.devices"),
+    t("plan.feat.traffic"),
+    t("plan.feat.locations"),
+    t("plan.feat.support"),
+  ];
+
+  return (
+    <section id="pricing" className="relative scroll-mt-24 py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("pricing.title")}</h2>
+          <p className="mt-4 text-muted-foreground">{t("pricing.subtitle")}</p>
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <div className="glass inline-flex rounded-2xl p-1">
+            {PLANS.map((p) => {
+              const active = p.months === selected;
+              return (
+                <button
+                  key={p.months}
+                  onClick={() => setSelected(p.months)}
+                  className={[
+                    "relative rounded-xl px-4 py-2 text-sm font-medium transition",
+                    active
+                      ? "bg-gradient-to-br from-white to-[oklch(0.78_0_0)] text-primary-foreground shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
+                      : "text-muted-foreground hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {t(p.labelKey)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-3xl">
+          <div className="glass-strong relative overflow-hidden rounded-3xl p-8 sm:p-10">
+            <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/20 blur-3xl" />
+            <div className="pointer-events-none absolute -left-16 bottom-0 size-56 rounded-full bg-white/10 blur-3xl" />
+
+            <div className="relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedPlan.badgeKey && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      <Sparkles className="size-3" />
+                      {t(selectedPlan.badgeKey)}
+                    </span>
+                  )}
+                  {savings > 0 && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
+                      {t("pricing.savings")} {formatPrice(savings)}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="mt-4 text-2xl font-semibold tracking-tight">{t(selectedPlan.labelKey)}</h3>
+
+                <div className="mt-4 flex items-baseline gap-3">
+                  <span className="text-5xl font-semibold tracking-tight">{formatPrice(selectedPlan.price)}</span>
+                  {savings > 0 && (
+                    <span className="text-base text-muted-foreground line-through">{formatPrice(regular)}</span>
+                  )}
+                </div>
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  ≈ {formatPrice(Math.round(selectedPlan.price / selectedPlan.months))} {t("pricing.per_month")}
+                </p>
+
+                <ul className="mt-6 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                  {planFeatures.map((f) => (
+                    <li key={f} className="flex items-center gap-2">
+                      <span className="grid size-4 place-items-center rounded-full bg-primary/15">
+                        <Check className="size-2.5 text-primary" strokeWidth={3} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Link
+                to="/checkout"
+                search={{ plan: selectedPlan.months }}
+                className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium sm:min-w-[180px]"
+              >
+                {t("pricing.cta")}
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Advantages() {
+  const { t } = useI18n();
+
+  const advantages = [
+    { icon: Smartphone, title: t("feat.devices.title"), text: t("feat.devices.text") },
+    { icon: Zap, title: t("feat.speed.title"), text: t("feat.speed.text") },
+    { icon: InfinityIcon, title: t("feat.traffic.title"), text: t("feat.traffic.text") },
+    { icon: Shield, title: t("feat.support.title"), text: t("feat.support.text") },
+    { icon: MessageCircle, title: t("feat.telegram.title"), text: t("feat.telegram.text") },
+    { icon: Globe2, title: t("feat.locations.title"), text: t("feat.locations.text") },
+  ];
+
+  return (
+    <section id="features" className="relative scroll-mt-24 py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("feat.title")}</h2>
+          <p className="mt-4 text-muted-foreground">{t("feat.subtitle")}</p>
+        </div>
+
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {advantages.map(({ icon: Icon, title, text }) => (
+            <div
+              key={title}
+              className="group relative overflow-hidden rounded-2xl border border-border bg-card/40 p-6 transition hover:border-foreground/15 hover:bg-card/70"
+            >
+              <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-primary/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
+              <div className="relative grid size-10 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
+                <Icon className="size-5" strokeWidth={2} />
+              </div>
+              <h3 className="relative mt-5 text-base font-semibold tracking-tight">{title}</h3>
+              <p className="relative mt-1.5 text-sm text-muted-foreground">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Faq() {
+  const { t } = useI18n();
+  const [open, setOpen] = useState<number | null>(0);
+
+  const faqItems = [
+    { q: t("faq.1.q"), a: t("faq.1.a") },
+    { q: t("faq.2.q"), a: t("faq.2.a") },
+    { q: t("faq.3.q"), a: t("faq.3.a") },
+    { q: t("faq.4.q"), a: t("faq.4.a") },
+    { q: t("faq.5.q"), a: t("faq.5.a") },
+  ];
+
+  return (
+    <section id="faq" className="relative scroll-mt-24 py-24">
+      <div className="mx-auto max-w-3xl px-4">
+        <div className="text-center">
+          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("faq.title")}</h2>
+          <p className="mt-4 text-muted-foreground">{t("faq.subtitle")}</p>
+        </div>
+
+        <div className="mt-12 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card/40">
+          {faqItems.map((item, i) => {
+            const isOpen = open === i;
+            return (
+              <button
+                key={item.q}
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="block w-full px-6 py-5 text-left transition hover:bg-card/70"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-sm font-medium sm:text-base">{item.q}</span>
+                  <ChevronDown
+                    className={`size-4 text-muted-foreground transition ${isOpen ? "rotate-180 text-foreground" : ""}`}
+                  />
+                </div>
+                <div
+                  className={`grid transition-all duration-300 ${
+                    isOpen ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden text-sm text-muted-foreground">{item.a}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-16 overflow-hidden rounded-3xl border border-border glass-strong p-8 text-center sm:p-12">
+          <h3 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t("cta.title")}
+          </h3>
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+            {t("cta.subtitle")}
+          </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#pricing"
+              className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium"
+            >
+              {t("cta.btn")}
+              <ArrowRight className="size-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  const { t } = useI18n();
+  return (
+    <footer className="border-t border-border/70 py-10">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-xs text-muted-foreground sm:flex-row">
+        <div className="flex items-center gap-2">
+          <Logo />
+          <span className="font-medium text-foreground/80">ClickVPN</span>
+          <span className="opacity-60">© {new Date().getFullYear()}</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <a href="#" className="transition hover:text-foreground">{t("footer.terms")}</a>
+          <a href="#" className="transition hover:text-foreground">{t("footer.privacy")}</a>
+          <a href="#" className="transition hover:text-foreground">{t("footer.support")}</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
