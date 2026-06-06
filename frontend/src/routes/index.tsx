@@ -10,7 +10,7 @@ import {
   ChevronDown,
   ArrowRight,
   Check,
-  Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
@@ -35,13 +35,12 @@ type Plan = {
   price: number;
   labelKey: "plan.1" | "plan.3" | "plan.6" | "plan.12";
   badgeKey?: "plan.badge.deal" | "plan.badge.popular";
-  highlight?: boolean;
 };
 
 const PLANS: Plan[] = [
   { months: 1, price: 109, labelKey: "plan.1" },
   { months: 3, price: 299, labelKey: "plan.3" },
-  { months: 6, price: 589, labelKey: "plan.6", badgeKey: "plan.badge.deal", highlight: true },
+  { months: 6, price: 589, labelKey: "plan.6", badgeKey: "plan.badge.deal" },
   { months: 12, price: 1099, labelKey: "plan.12", badgeKey: "plan.badge.popular" },
 ];
 
@@ -54,9 +53,13 @@ function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <Hero />
+      <Why />
+      <TrialBanner />
       <Pricing />
+      <HowTo />
       <Advantages />
       <Faq />
+      <Support />
       <Footer />
     </div>
   );
@@ -119,64 +122,118 @@ function Logo() {
   );
 }
 
+function FeatureChip({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
+      <Icon className="size-3.5 shrink-0 text-primary" strokeWidth={2} />
+      {children}
+    </span>
+  );
+}
+
 function Hero() {
   const { t } = useI18n();
   return (
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden />
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[600px] bg-aurora opacity-70" aria-hidden />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[700px] bg-aurora opacity-60" aria-hidden />
 
-      <div className="relative mx-auto max-w-6xl px-4 pt-24 pb-24 sm:pt-32 sm:pb-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="glass mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-muted-foreground">
-            <Sparkles className="size-3.5 text-primary" />
-            {t("hero.badge")}
-          </div>
+      <div className="relative mx-auto max-w-6xl px-4 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
 
-          <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
-            <span className="gradient-text">{t("hero.h1.1")}</span>
-            <br />
-            {t("hero.h1.2")}
-          </h1>
+        {/* Big brand name */}
+        <h1
+          className="font-black leading-[0.88] tracking-[-0.04em] select-none"
+          style={{ fontSize: "clamp(4.5rem, 16vw, 13rem)" }}
+        >
+          ClickVPN
+        </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-pretty text-base text-muted-foreground sm:text-lg">
-            {t("hero.p")}
-          </p>
+        {/* Tagline */}
+        <p className="mt-6 text-lg sm:text-2xl font-light tracking-tight text-muted-foreground">
+          {t("hero.tagline")}
+        </p>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="#pricing"
-              className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium"
-            >
-              {t("hero.cta")}
-              <ArrowRight className="size-4" />
-            </a>
-            <Link
-              to="/auth"
-              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-foreground/90 transition hover:text-foreground"
-            >
-              {t("hero.signin")}
-            </Link>
-          </div>
+        {/* Feature chips */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          <FeatureChip icon={Smartphone}>{t("hero.pill.devices")}</FeatureChip>
+          <FeatureChip icon={InfinityIcon}>{t("hero.pill.traffic")}</FeatureChip>
+          <FeatureChip icon={Globe2}>{t("hero.pill.locations")}</FeatureChip>
+          <FeatureChip icon={Shield}>{t("hero.pill.support")}</FeatureChip>
+          <FeatureChip icon={CreditCard}>{t("hero.pill.payment")}</FeatureChip>
+        </div>
 
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-muted-foreground">
-            <Pill>{t("hero.pill.devices")}</Pill>
-            <Pill>{t("hero.pill.traffic")}</Pill>
-            <Pill>{t("hero.pill.locations")}</Pill>
-            <Pill>{t("hero.pill.payment")}</Pill>
-          </div>
+        {/* CTAs */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="#pricing"
+            className="btn-primary inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold"
+          >
+            {t("hero.cta")}
+            <ArrowRight className="size-4" />
+          </a>
+          <Link
+            to="/auth"
+            className="glass inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-medium text-foreground/80 transition hover:text-foreground"
+          >
+            {t("hero.signin")}
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function Pill({ children }: { children: React.ReactNode }) {
+function Why() {
+  const { t } = useI18n();
+
+  const cards = [
+    {
+      title: t("why.1.title"),
+      icon: Smartphone,
+      items: [t("why.1.a"), t("why.1.b"), t("why.1.c")],
+    },
+    {
+      title: t("why.2.title"),
+      icon: Zap,
+      items: [t("why.2.a"), t("why.2.b"), t("why.2.c")],
+    },
+    {
+      title: t("why.3.title"),
+      icon: MessageCircle,
+      items: [t("why.3.a"), t("why.3.b"), t("why.3.c")],
+    },
+  ];
+
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="size-1 rounded-full bg-primary/80" />
-      {children}
-    </span>
+    <section className="relative py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-balance text-center text-4xl font-black tracking-tight sm:text-5xl">
+          {t("why.title")}
+        </h2>
+
+        <div className="mt-14 grid gap-4 sm:grid-cols-3">
+          {cards.map(({ title, icon: Icon, items }) => (
+            <div
+              key={title}
+              className="glass rounded-3xl p-7"
+            >
+              <div className="mb-5 grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
+                <Icon className="size-5" strokeWidth={1.8} />
+              </div>
+              <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+              <ul className="mt-4 space-y-2.5">
+                {items.map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <Check className="size-4 shrink-0 text-primary" strokeWidth={2.5} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -199,7 +256,7 @@ function Pricing() {
     <section id="pricing" className="relative scroll-mt-24 py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("pricing.title")}</h2>
+          <h2 className="text-balance text-4xl font-black tracking-tight sm:text-5xl">{t("pricing.title")}</h2>
           <p className="mt-4 text-muted-foreground">{t("pricing.subtitle")}</p>
         </div>
 
@@ -212,7 +269,7 @@ function Pricing() {
                   key={p.months}
                   onClick={() => setSelected(p.months)}
                   className={[
-                    "relative rounded-xl px-4 py-2 text-sm font-medium transition",
+                    "relative rounded-xl px-4 py-2 text-sm font-semibold transition",
                     active
                       ? "bg-gradient-to-br from-white to-[oklch(0.78_0_0)] text-primary-foreground shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
                       : "text-muted-foreground hover:text-foreground",
@@ -232,39 +289,35 @@ function Pricing() {
 
             <div className="relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {selectedPlan.badgeKey && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">
-                      <Sparkles className="size-3" />
-                      {t(selectedPlan.badgeKey)}
-                    </span>
-                  )}
-                  {savings > 0 && (
-                    <span className="inline-flex items-center rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                      {t("pricing.savings")} {formatPrice(savings)}
-                    </span>
-                  )}
-                </div>
+                {selectedPlan.badgeKey && (
+                  <span className="inline-flex items-center rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">
+                    {t(selectedPlan.badgeKey)}
+                  </span>
+                )}
 
-                <h3 className="mt-4 text-2xl font-semibold tracking-tight">{t(selectedPlan.labelKey)}</h3>
+                <h3 className="mt-4 text-2xl font-bold tracking-tight">{t(selectedPlan.labelKey)}</h3>
 
                 <div className="mt-4 flex items-baseline gap-3">
-                  <span className="text-5xl font-semibold tracking-tight">{formatPrice(selectedPlan.price)}</span>
+                  <span className="text-5xl font-black tracking-tight">{formatPrice(selectedPlan.price)}</span>
                   {savings > 0 && (
                     <span className="text-base text-muted-foreground line-through">{formatPrice(regular)}</span>
                   )}
                 </div>
 
-                <p className="mt-2 text-sm text-muted-foreground">
+                {savings > 0 && (
+                  <p className="mt-1 text-sm text-emerald-300">
+                    {t("pricing.savings")} {formatPrice(savings)}
+                  </p>
+                )}
+
+                <p className="mt-1 text-sm text-muted-foreground">
                   ≈ {formatPrice(Math.round(selectedPlan.price / selectedPlan.months))} {t("pricing.per_month")}
                 </p>
 
                 <ul className="mt-6 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                   {planFeatures.map((f) => (
                     <li key={f} className="flex items-center gap-2">
-                      <span className="grid size-4 place-items-center rounded-full bg-primary/15">
-                        <Check className="size-2.5 text-primary" strokeWidth={3} />
-                      </span>
+                      <Check className="size-4 shrink-0 text-primary" strokeWidth={2.5} />
                       {f}
                     </li>
                   ))}
@@ -274,7 +327,7 @@ function Pricing() {
               <Link
                 to="/checkout"
                 search={{ plan: selectedPlan.months }}
-                className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium sm:min-w-[180px]"
+                className="btn-primary inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-base font-bold sm:min-w-[180px]"
               >
                 {t("pricing.cta")}
                 <ArrowRight className="size-4" />
@@ -303,7 +356,7 @@ function Advantages() {
     <section id="features" className="relative scroll-mt-24 py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("feat.title")}</h2>
+          <h2 className="text-balance text-4xl font-black tracking-tight sm:text-5xl">{t("feat.title")}</h2>
           <p className="mt-4 text-muted-foreground">{t("feat.subtitle")}</p>
         </div>
 
@@ -317,7 +370,7 @@ function Advantages() {
               <div className="relative grid size-10 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
                 <Icon className="size-5" strokeWidth={2} />
               </div>
-              <h3 className="relative mt-5 text-base font-semibold tracking-tight">{title}</h3>
+              <h3 className="relative mt-5 text-base font-bold tracking-tight">{title}</h3>
               <p className="relative mt-1.5 text-sm text-muted-foreground">{text}</p>
             </div>
           ))}
@@ -343,7 +396,7 @@ function Faq() {
     <section id="faq" className="relative scroll-mt-24 py-24">
       <div className="mx-auto max-w-3xl px-4">
         <div className="text-center">
-          <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">{t("faq.title")}</h2>
+          <h2 className="text-balance text-4xl font-black tracking-tight sm:text-5xl">{t("faq.title")}</h2>
           <p className="mt-4 text-muted-foreground">{t("faq.subtitle")}</p>
         </div>
 
@@ -357,9 +410,9 @@ function Faq() {
                 className="block w-full px-6 py-5 text-left transition hover:bg-card/70"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm font-medium sm:text-base">{item.q}</span>
+                  <span className="text-sm font-semibold sm:text-base">{item.q}</span>
                   <ChevronDown
-                    className={`size-4 text-muted-foreground transition ${isOpen ? "rotate-180 text-foreground" : ""}`}
+                    className={`size-4 shrink-0 text-muted-foreground transition ${isOpen ? "rotate-180 text-foreground" : ""}`}
                   />
                 </div>
                 <div
@@ -375,7 +428,7 @@ function Faq() {
         </div>
 
         <div className="mt-16 overflow-hidden rounded-3xl border border-border glass-strong p-8 text-center sm:p-12">
-          <h3 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h3 className="text-balance text-2xl font-black tracking-tight sm:text-3xl">
             {t("cta.title")}
           </h3>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
@@ -384,11 +437,104 @@ function Faq() {
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#pricing"
-              className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium"
+              className="btn-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold"
             >
               {t("cta.btn")}
               <ArrowRight className="size-4" />
             </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TrialBanner() {
+  const { t } = useI18n();
+  return (
+    <section className="py-10">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-8 sm:px-12">
+          <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-16 bottom-0 size-48 rounded-full bg-white/5 blur-2xl" />
+          <div className="relative flex flex-col items-center justify-between gap-6 text-center sm:flex-row sm:text-left">
+            <div>
+              <h2 className="text-2xl font-black tracking-tight text-primary-foreground sm:text-3xl">
+                {t("trial.title")}
+              </h2>
+              <p className="mt-1 text-sm text-primary-foreground/75">{t("trial.subtitle")}</p>
+            </div>
+            <Link
+              to="/auth"
+              className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-primary-foreground px-7 py-3.5 text-sm font-bold text-primary transition hover:opacity-90"
+            >
+              {t("trial.cta")}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowTo() {
+  const { t } = useI18n();
+  const steps = [t("howto.1"), t("howto.2"), t("howto.3")];
+  return (
+    <section className="relative py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-balance text-center text-4xl font-black tracking-tight sm:text-5xl">
+          {t("howto.title")}
+        </h2>
+        <div className="mt-14 grid gap-4 sm:grid-cols-3">
+          {steps.map((step, i) => (
+            <div key={i} className="glass rounded-3xl p-7 flex gap-5 items-start">
+              <span className="shrink-0 text-5xl font-black text-primary/25 leading-none select-none">{i + 1}</span>
+              <p className="text-sm leading-relaxed text-muted-foreground pt-1">{step}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Support() {
+  const { t } = useI18n();
+  const cards = [
+    { icon: MessageCircle, text: t("support.card.1") },
+    { icon: CreditCard, text: t("support.card.2") },
+    { icon: Globe2, text: t("support.card.3") },
+  ];
+  return (
+    <section className="relative py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid gap-10 sm:grid-cols-2 items-center">
+          <div>
+            <h2 className="text-balance text-4xl font-black tracking-tight sm:text-5xl">
+              {t("support.title")}
+            </h2>
+            <p className="mt-4 text-muted-foreground">{t("support.subtitle")}</p>
+            <a
+              href="https://t.me/help_clickbot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary mt-8 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold"
+            >
+              {t("support.cta")}
+              <ArrowRight className="size-4" />
+            </a>
+          </div>
+          <div className="grid gap-3">
+            {cards.map(({ icon: Icon, text }) => (
+              <div key={text} className="glass rounded-2xl p-5 flex items-center gap-4">
+                <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20 shrink-0">
+                  <Icon className="size-5" strokeWidth={1.8} />
+                </div>
+                <p className="text-sm text-muted-foreground">{text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -403,13 +549,13 @@ function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-xs text-muted-foreground sm:flex-row">
         <div className="flex items-center gap-2">
           <Logo />
-          <span className="font-medium text-foreground/80">ClickVPN</span>
+          <span className="font-semibold text-foreground/80">ClickVPN</span>
           <span className="opacity-60">© {new Date().getFullYear()}</span>
         </div>
         <div className="flex items-center gap-6">
-          <a href="#" className="transition hover:text-foreground">{t("footer.terms")}</a>
-          <a href="#" className="transition hover:text-foreground">{t("footer.privacy")}</a>
-          <a href="#" className="transition hover:text-foreground">{t("footer.support")}</a>
+          <Link to="/terms" className="transition hover:text-foreground">{t("footer.terms")}</Link>
+          <Link to="/privacy" className="transition hover:text-foreground">{t("footer.privacy")}</Link>
+          <a href="https://t.me/help_clickbot" target="_blank" rel="noopener noreferrer" className="transition hover:text-foreground">{t("footer.support")}</a>
         </div>
       </div>
     </footer>

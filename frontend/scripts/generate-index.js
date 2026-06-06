@@ -65,7 +65,7 @@ async function main() {
 
     // Also copy built client files to the backend static directory so the
     // FastAPI server can serve the SPA from the same domain.
-    const backendStatic = path.resolve(process.cwd(), '..', 'forallall-main', 'static')
+    const backendStatic = path.resolve(process.cwd(), '..', 'backend', 'static')
     try {
       if (!fs.existsSync(backendStatic)) {
         console.warn('Backend static dir not found, skipping copy to backend static directory')

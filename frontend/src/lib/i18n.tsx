@@ -29,10 +29,26 @@ const dict = {
     "hero.p": "Один ключ для всех устройств. Простое подключение. Высокая скорость. Без лишних настроек.",
     "hero.cta": "Подключиться",
     "hero.signin": "Войти в кабинет",
+    "hero.tagline": "Быстрый интернет без ограничений",
     "hero.pill.devices": "До 5 устройств",
     "hero.pill.traffic": "Безлимитный трафик",
     "hero.pill.locations": "7 локаций",
-    "hero.pill.payment": "Оплата по СБП / картой / криптовалютой",
+    "hero.pill.support": "Поддержка 24/7",
+    "hero.pill.payment": "СБП · карта · криптовалюта",
+
+    "why.title": "Что вы получаете",
+    "why.1.title": "Один ключ для всех",
+    "why.1.a": "Телефон, ноутбук, планшет, ТВ",
+    "why.1.b": "До 5 устройств одновременно",
+    "why.1.c": "Управление из личного кабинета",
+    "why.2.title": "Скорость и надёжность",
+    "why.2.a": "Безлимитный трафик",
+    "why.2.b": "7 серверных локаций",
+    "why.2.c": "Стабильное соединение",
+    "why.3.title": "Удобное управление",
+    "why.3.a": "Личный кабинет",
+    "why.3.b": "Telegram-уведомления",
+    "why.3.c": "Поддержка 24/7",
 
     // Pricing
     "pricing.title": "Простые тарифы",
@@ -80,6 +96,25 @@ const dict = {
     "faq.4.a": "В разделе «Устройства» нажмите «Отвязать» рядом с нужным устройством. Доступ для него сразу прекращается.",
     "faq.5.q": "Какие способы оплаты доступны?",
     "faq.5.a": "СБП, банковские карты и криптовалюта через защищённую платформу Platega.",
+
+    // Trial banner
+    "trial.title": "Попробуйте бесплатно",
+    "trial.subtitle": "Все преимущества без ограничений — для новых пользователей",
+    "trial.cta": "Попробовать",
+
+    // How to
+    "howto.title": "Как пользоваться ClickVPN",
+    "howto.1": "Оформите подписку и получите ключ доступа в личном кабинете сразу после оплаты",
+    "howto.2": "Установите приложение на телефон, ноутбук или любое другое устройство",
+    "howto.3": "Введите ключ — и пользуйтесь быстрым VPN без ограничений",
+
+    // Support section
+    "support.title": "Остались вопросы?",
+    "support.subtitle": "Напишите нам — поможем от первой настройки до стабильного подключения",
+    "support.cta": "Написать в поддержку",
+    "support.card.1": "На связи 24/7 — поможем в любое время",
+    "support.card.2": "Решим вопросы по подписке и оплате",
+    "support.card.3": "Поможем настроить VPN и подобрать локацию",
 
     // CTA block
     "cta.title": "Готовы начать прямо сейчас?",
@@ -171,9 +206,25 @@ const dict = {
     "hero.cta": "Get started",
     "hero.signin": "Sign in to dashboard",
     "hero.pill.devices": "Up to 5 devices",
+    "hero.tagline": "Fast internet without limits",
     "hero.pill.traffic": "Unlimited traffic",
     "hero.pill.locations": "7 locations",
-    "hero.pill.payment": "Card / crypto / bank transfer",
+    "hero.pill.support": "24/7 support",
+    "hero.pill.payment": "Card · crypto · bank",
+
+    "why.title": "What you get",
+    "why.1.title": "One key for everything",
+    "why.1.a": "Phone, laptop, tablet, TV",
+    "why.1.b": "Up to 5 devices at once",
+    "why.1.c": "Manage from your dashboard",
+    "why.2.title": "Speed & reliability",
+    "why.2.a": "Unlimited traffic",
+    "why.2.b": "7 server locations",
+    "why.2.c": "Stable connection",
+    "why.3.title": "Easy management",
+    "why.3.a": "Personal dashboard",
+    "why.3.b": "Telegram notifications",
+    "why.3.c": "24/7 support",
 
     // Pricing
     "pricing.title": "Simple pricing",
@@ -221,6 +272,25 @@ const dict = {
     "faq.4.a": "In the Devices section, click Remove next to the device. Access is revoked immediately.",
     "faq.5.q": "What payment methods are available?",
     "faq.5.a": "Bank transfer (SBP), bank cards and cryptocurrency via the secure Platega platform.",
+
+    // Trial banner
+    "trial.title": "Try for free",
+    "trial.subtitle": "Full access with no restrictions — for new users",
+    "trial.cta": "Try free",
+
+    // How to
+    "howto.title": "How to use ClickVPN",
+    "howto.1": "Subscribe and get your access key in the dashboard right after payment",
+    "howto.2": "Install the app on your phone, laptop or any other device",
+    "howto.3": "Enter the key — and enjoy fast VPN with no limits",
+
+    // Support section
+    "support.title": "Have questions?",
+    "support.subtitle": "Write to us — we'll help from first setup to stable connection",
+    "support.cta": "Contact support",
+    "support.card.1": "Available 24/7 — we'll help anytime",
+    "support.card.2": "Handle subscription and payment questions",
+    "support.card.3": "Help configure VPN and choose a location",
 
     // CTA block
     "cta.title": "Ready to start right now?",
