@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, ExternalLink, Smartphone, Apple, Monitor, Terminal, LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { getLatestSubscriptionForUser } from "@/lib/api/auth.functions";
 import { useI18n } from "@/lib/i18n";
 import type { TKey } from "@/lib/i18n";
+import type { LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/connect")({
   head: () => ({
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/connect")({
 });
 
 type Platform = {
-  emoji: string;
+  icon: LucideIcon;
   name: string;
   app: string;
   storeKey: TKey;
@@ -26,10 +27,10 @@ type Platform = {
 };
 
 const PLATFORMS: Platform[] = [
-  { emoji: "🤖", name: "Android", app: "Happ", storeKey: "connect.store.google", storeUrl: "https://play.google.com/store/apps/details?id=com.happproxy&hl=ru" },
-  { emoji: "🍏", name: "iPhone", app: "Happ", storeKey: "connect.store.appstore", storeUrl: "https://apps.apple.com/app/happ-proxy-utility/id6504287215" },
-  { emoji: "🖥", name: "Windows", app: "Happ / Hiddify", storeKey: "connect.store.developer", storeUrl: "https://hiddify.com/download" },
-  { emoji: "🐧", name: "Linux", app: "Hiddify", storeKey: "connect.store.github", storeUrl: "https://github.com/hiddify/hiddify-app/releases/latest" },
+  { icon: Smartphone, name: "Android", app: "Happ", storeKey: "connect.store.google", storeUrl: "https://play.google.com/store/apps/details?id=com.happproxy&hl=ru" },
+  { icon: Apple, name: "iPhone", app: "Happ", storeKey: "connect.store.appstore", storeUrl: "https://apps.apple.com/app/happ-proxy-utility/id6504287215" },
+  { icon: Monitor, name: "Windows", app: "Happ / Hiddify", storeKey: "connect.store.developer", storeUrl: "https://hiddify.com/download" },
+  { icon: Terminal, name: "Linux", app: "Hiddify", storeKey: "connect.store.github", storeUrl: "https://github.com/hiddify/hiddify-app/releases/latest" },
 ];
 
 function useCopy(text: string | null, successMsg: string) {
@@ -61,8 +62,9 @@ function PlatformCard({ platform, vpnKey }: { platform: Platform; vpnKey: string
 
   return (
     <div className="glass rounded-2xl p-6 space-y-4">
-      <h2 className="text-base font-semibold">
-        {platform.emoji} {platform.name} {t("connect.via")} {platform.app}
+      <h2 className="flex items-center gap-2 text-base font-semibold">
+        <platform.icon className="size-4 shrink-0" />
+        {platform.name} {t("connect.via")} {platform.app}
       </h2>
 
       <ol className="space-y-4">
@@ -87,7 +89,7 @@ function PlatformCard({ platform, vpnKey }: { platform: Platform; vpnKey: string
             <span>{t("connect.copy_link")}</span>
             {vpnKey ? (
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-background/40 px-3 py-2">
-                <code className="flex-1 truncate font-mono text-xs text-foreground/70">🔗 {vpnKey}</code>
+                <code className="flex items-center gap-1.5 flex-1 truncate font-mono text-xs text-foreground/70"><LinkIcon className="size-3 shrink-0" />{vpnKey}</code>
                 <button
                   onClick={copy}
                   className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-white/10 px-2 py-1 text-xs text-muted-foreground transition hover:text-foreground"
