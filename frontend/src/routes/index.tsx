@@ -133,6 +133,7 @@ function FeatureChip({ icon: Icon, children }: { icon: React.ElementType; childr
 
 function Hero() {
   const { t } = useI18n();
+  const { user } = useAuth();
   return (
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden />
@@ -172,7 +173,7 @@ function Hero() {
             <ArrowRight className="size-4" />
           </a>
           <Link
-            to="/auth"
+            to={user ? "/dashboard" : "/auth"}
             className="glass inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-base font-medium text-foreground/80 transition hover:text-foreground"
           >
             {t("hero.signin")}
@@ -261,7 +262,17 @@ function Pricing() {
         </div>
 
         <div className="mt-10 flex justify-center">
-          <div className="glass inline-flex rounded-2xl p-1">
+          <div className="glass relative inline-flex rounded-2xl p-1">
+            {/* sliding pill */}
+            <span
+              className="pointer-events-none absolute inset-y-1 rounded-xl bg-gradient-to-br from-white to-[oklch(0.78_0_0)] shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
+              style={{
+                width: `calc((100% - 8px) / ${PLANS.length})`,
+                left: "4px",
+                transform: `translateX(calc(${PLANS.findIndex(p => p.months === selected)} * 100%))`,
+                transition: "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}
+            />
             {PLANS.map((p) => {
               const active = p.months === selected;
               return (
@@ -269,10 +280,8 @@ function Pricing() {
                   key={p.months}
                   onClick={() => setSelected(p.months)}
                   className={[
-                    "relative rounded-xl px-4 py-2 text-sm font-semibold transition",
-                    active
-                      ? "bg-gradient-to-br from-white to-[oklch(0.78_0_0)] text-primary-foreground shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
-                      : "text-muted-foreground hover:text-foreground",
+                    "relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200",
+                    active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                   ].join(" ")}
                 >
                   {t(p.labelKey)}
@@ -287,7 +296,7 @@ function Pricing() {
             <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/20 blur-3xl" />
             <div className="pointer-events-none absolute -left-16 bottom-0 size-56 rounded-full bg-white/10 blur-3xl" />
 
-            <div className="relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div key={selected} className="animate-plan-in relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 {selectedPlan.badgeKey && (
                   <span className="inline-flex items-center rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">

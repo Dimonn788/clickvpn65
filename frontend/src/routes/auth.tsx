@@ -1,11 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shield, Mail } from "lucide-react";
-import { login, confirmLogin } from "@/lib/api/auth.functions";
+import { login, confirmLogin, getUserSession } from "@/lib/api/auth.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
+  beforeLoad: async () => {
+    const result = await getUserSession().catch(() => null);
+    if (result?.id) throw redirect({ to: "/dashboard" });
+  },
   head: () => ({
     meta: [
       { title: "Вход — ClickVPN" },

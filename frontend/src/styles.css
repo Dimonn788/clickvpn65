@@ -163,6 +163,12 @@
     box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent);
   }
 
+  @keyframes plan-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-plan-in { animation: plan-in 0.2s ease both; }
+
   @keyframes float-slow {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -170,6 +176,7 @@
   .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
 
   /* Scrollbar */
+  html { scrollbar-gutter: stable; scroll-behavior: smooth; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {

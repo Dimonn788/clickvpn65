@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Smartphone, Laptop, Tv, Tablet, Trash2, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Smartphone, Laptop, Tv, Tablet, Trash2, Loader2, RefreshCw } from "lucide-react";
 import { getDevicesForUser, removeDevice as removeDeviceFromUser } from "@/lib/api/auth.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
@@ -41,13 +41,23 @@ function DevicesPage() {
   const { user } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function load() {
     if (!user) return;
     setLoading(true);
-    const { devices } = await getDevicesForUser();
-    setDevices(devices);
-    setLoading(false);
+    setTimedOut(false);
+    timeoutRef.current = setTimeout(() => setTimedOut(true), 10_000);
+    try {
+      const { devices } = await getDevicesForUser();
+      setDevices(devices);
+    } catch {
+      setTimedOut(true);
+    } finally {
+      clearTimeout(timeoutRef.current!);
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
@@ -68,9 +78,20 @@ function DevicesPage() {
       </div>
 
       <div className="glass rounded-2xl">
-        {loading ? (
+        {loading && !timedOut ? (
           <div className="flex items-center justify-center p-12 text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
+          </div>
+        ) : timedOut ? (
+          <div className="flex flex-col items-center gap-4 p-12 text-center">
+            <p className="text-sm text-muted-foreground">{t("devices.error")}</p>
+            <button
+              onClick={load}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+            >
+              <RefreshCw className="size-3.5" />
+              {t("devices.reload")}
+            </button>
           </div>
         ) : devices.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">

@@ -7,10 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { I18nProvider } from "../lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -39,9 +38,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -89,8 +85,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@ClickVPN" },
       { name: "twitter:title", content: "ClickVPN" },
       { name: "twitter:description", content: "ClickVPN — современное веб-приложение для быстрого доступа и удобной подписки." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed47e593-f0f5-491b-9225-c7c7deda113f/id-preview-c899dec9--62923c4d-b6c9-441f-8358-a84b0e339eae.lovable.app-1780599554433.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed47e593-f0f5-491b-9225-c7c7deda113f/id-preview-c899dec9--62923c4d-b6c9-441f-8358-a84b0e339eae.lovable.app-1780599554433.png" },
     ],
     links: [
       {

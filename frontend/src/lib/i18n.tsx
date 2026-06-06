@@ -152,6 +152,8 @@ const dict = {
     "devices.empty": "У вас ещё нет устройств.",
     "devices.added": "добавлено",
     "devices.remove": "Отвязать",
+    "devices.error": "Произошла ошибка — перезагрузите страницу",
+    "devices.reload": "Перезагрузить",
 
     // Payments
     "payments.title": "История платежей",
@@ -328,6 +330,8 @@ const dict = {
     "devices.empty": "No devices yet.",
     "devices.added": "added",
     "devices.remove": "Remove",
+    "devices.error": "Something went wrong — please reload the page",
+    "devices.reload": "Reload",
 
     // Payments
     "payments.title": "Payment history",
