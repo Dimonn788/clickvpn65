@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send, Mail, Loader2, Check, Languages } from "lucide-react";
 import { updateTelegram } from "@/lib/api/auth.functions";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +14,48 @@ export const Route = createFileRoute("/_authenticated/settings")({
   }),
   component: SettingsPage,
 });
+
+const LANGS = [
+  { value: "ru" as const, label: "Русский" },
+  { value: "en" as const, label: "English" },
+];
+
+function LangTabs({ locale, setLocale }: { locale: "ru" | "en"; setLocale: (l: "ru" | "en") => void }) {
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pill, setPill] = useState({ left: 4, width: 0 });
+
+  useEffect(() => {
+    const idx = LANGS.findIndex(l => l.value === locale);
+    const btn = btnRefs.current[idx];
+    if (btn) setPill({ left: btn.offsetLeft, width: btn.offsetWidth });
+  }, [locale]);
+
+  return (
+    <div className="glass relative inline-flex rounded-2xl p-1">
+      <span
+        className="pointer-events-none absolute inset-y-1 rounded-xl bg-gradient-to-br from-white to-[oklch(0.78_0_0)] shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
+        style={{
+          left: pill.left,
+          width: pill.width,
+          transition: "left 300ms cubic-bezier(0.34, 1.56, 0.64, 1), width 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      />
+      {LANGS.map((lang, i) => (
+        <button
+          key={lang.value}
+          ref={el => { btnRefs.current[i] = el; }}
+          onClick={() => setLocale(lang.value)}
+          className={[
+            "relative z-10 rounded-xl px-5 py-2 text-sm font-semibold transition-colors duration-200",
+            locale === lang.value ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+          ].join(" ")}
+        >
+          {lang.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function SettingsPage() {
   const { t, locale, setLocale } = useI18n();
@@ -61,19 +103,8 @@ function SettingsPage() {
           <Languages className="size-4" />
           {t("settings.language")}
         </div>
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() => setLocale("ru")}
-            className={`rounded-xl px-4 py-2 text-sm font-medium transition ${locale === "ru" ? "btn-primary" : "glass text-muted-foreground hover:text-foreground"}`}
-          >
-            Русский
-          </button>
-          <button
-            onClick={() => setLocale("en")}
-            className={`rounded-xl px-4 py-2 text-sm font-medium transition ${locale === "en" ? "btn-primary" : "glass text-muted-foreground hover:text-foreground"}`}
-          >
-            English
-          </button>
+        <div className="mt-3">
+          <LangTabs locale={locale} setLocale={setLocale} />
         </div>
       </div>
 

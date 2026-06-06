@@ -62,7 +62,7 @@ function CheckoutPage() {
         window.location.href = resp.pay_url;
         return;
       }
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/success" });
     } catch (err) {
       setError(err instanceof Error ? err.message : t("checkout.error"));
       setBusy(false);

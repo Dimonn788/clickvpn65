@@ -149,8 +149,8 @@ async def subscriptions(request: Request) -> dict:
         return {"subscriptions": []}
     try:
         subs = await _user_subscriptions(user)
-    except remnawave.RemnawaveError as e:
-        raise HTTPException(status_code=502, detail=f"Ошибка панели: {e}")
+    except remnawave.RemnawaveError:
+        return {"subscriptions": []}
     return {
         "subscriptions": [
             {
@@ -184,10 +184,13 @@ async def devices(request: Request, uuid: str | None = None) -> dict:
     user = require_user(request)
     if not user["email_verified"]:
         return {"devices": []}
-    sub_uuid = await _resolve_subscription_uuid(user, uuid)
-    if sub_uuid is None:
+    try:
+        sub_uuid = await _resolve_subscription_uuid(user, uuid)
+        if sub_uuid is None:
+            return {"devices": []}
+        items = await remnawave.list_user_devices(sub_uuid)
+    except remnawave.RemnawaveError:
         return {"devices": []}
-    items = await remnawave.list_user_devices(sub_uuid)
     return {"devices": items}
 
 

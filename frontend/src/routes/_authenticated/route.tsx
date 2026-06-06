@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutGrid, Smartphone, Receipt, Settings as SettingsIcon, LogOut, Shield } from "lucide-react";
+import { LayoutGrid, Smartphone, Receipt, Settings as SettingsIcon, LogOut, Shield, Wifi } from "lucide-react";
 import { getUserSession, logout } from "@/lib/api/auth.functions";
 import { useI18n } from "@/lib/i18n";
 
@@ -20,6 +20,7 @@ function DashboardLayout() {
 
   const nav = [
     { to: "/dashboard", icon: LayoutGrid, label: t("dash.overview") },
+    { to: "/connect", icon: Wifi, label: t("dash.connect") },
     { to: "/devices", icon: Smartphone, label: t("dash.devices") },
     { to: "/payments", icon: Receipt, label: t("dash.payments") },
     { to: "/settings", icon: SettingsIcon, label: t("dash.settings") },

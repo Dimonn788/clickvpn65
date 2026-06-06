@@ -29,8 +29,8 @@ HELEKET_URL = "https://api.heleket.com/v1"
 PLATEGA_METHOD_SBP = 2
 PLATEGA_METHOD_CARD = 11
 
-RETURN_URL = os.getenv("PAYMENT_RETURN_URL", "https://clickvpn.org/cabinet")
-FAILED_URL = os.getenv("PAYMENT_FAILED_URL", "https://clickvpn.org/cabinet")
+RETURN_URL = os.getenv("PAYMENT_RETURN_URL", "https://clickvpn.org/success")
+FAILED_URL = os.getenv("PAYMENT_FAILED_URL", "https://clickvpn.org/checkout")
 
 
 class PaymentError(RuntimeError):

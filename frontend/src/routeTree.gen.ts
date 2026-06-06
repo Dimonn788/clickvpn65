@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SuccessRouteImport } from './routes/success'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -19,10 +20,16 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedDevicesRouteImport } from './routes/_authenticated/devices'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedConnectRouteImport } from './routes/_authenticated/connect'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuccessRoute = SuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -69,13 +76,20 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConnectRoute = AuthenticatedConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/privacy': typeof PrivacyRoute
+  '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/connect': typeof AuthenticatedConnectRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devices': typeof AuthenticatedDevicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -86,7 +100,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/privacy': typeof PrivacyRoute
+  '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/connect': typeof AuthenticatedConnectRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devices': typeof AuthenticatedDevicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -99,7 +115,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/privacy': typeof PrivacyRoute
+  '/success': typeof SuccessRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/connect': typeof AuthenticatedConnectRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/devices': typeof AuthenticatedDevicesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -112,7 +130,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/privacy'
+    | '/success'
     | '/terms'
+    | '/connect'
     | '/dashboard'
     | '/devices'
     | '/payments'
@@ -123,7 +143,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/privacy'
+    | '/success'
     | '/terms'
+    | '/connect'
     | '/dashboard'
     | '/devices'
     | '/payments'
@@ -135,7 +157,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/privacy'
+    | '/success'
     | '/terms'
+    | '/_authenticated/connect'
     | '/_authenticated/dashboard'
     | '/_authenticated/devices'
     | '/_authenticated/payments'
@@ -148,6 +172,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   PrivacyRoute: typeof PrivacyRoute
+  SuccessRoute: typeof SuccessRoute
   TermsRoute: typeof TermsRoute
 }
 
@@ -158,6 +183,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/success': {
+      id: '/success'
+      path: '/success'
+      fullPath: '/success'
+      preLoaderRoute: typeof SuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -223,10 +255,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/connect': {
+      id: '/_authenticated/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof AuthenticatedConnectRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedConnectRoute: typeof AuthenticatedConnectRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDevicesRoute: typeof AuthenticatedDevicesRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
@@ -234,6 +274,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedConnectRoute: AuthenticatedConnectRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDevicesRoute: AuthenticatedDevicesRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
@@ -249,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   PrivacyRoute: PrivacyRoute,
+  SuccessRoute: SuccessRoute,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport

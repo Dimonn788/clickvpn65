@@ -11,6 +11,8 @@ import {
   ArrowRight,
   Check,
   CreditCard,
+  KeyRound,
+  Wifi,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
@@ -46,6 +48,30 @@ const PLANS: Plan[] = [
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
+}
+
+function useAnimatedNumber(target: number, duration = 380) {
+  const [display, setDisplay] = useState(target);
+  const prev = useRef(target);
+  const frame = useRef<number>();
+
+  useEffect(() => {
+    const start = prev.current;
+    const diff = target - start;
+    if (diff === 0) return;
+    const startTime = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(start + diff * ease));
+      if (p < 1) { frame.current = requestAnimationFrame(tick); }
+      else { prev.current = target; }
+    };
+    frame.current = requestAnimationFrame(tick);
+    return () => { if (frame.current) cancelAnimationFrame(frame.current); };
+  }, [target, duration]);
+
+  return display;
 }
 
 function LandingPage() {
@@ -154,7 +180,7 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
 
 function FeatureChip({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground">
       <Icon className="size-3.5 shrink-0 text-primary" strokeWidth={2} />
       {children}
     </span>
@@ -198,13 +224,12 @@ function Hero() {
 
         {/* Feature chips */}
         <div
-          className="mt-8 flex flex-wrap items-center justify-center gap-2 animate-intro-up"
+          className="mt-8 flex flex-wrap items-center justify-center gap-2 px-2 animate-intro-up"
           style={{ animationDelay: "0.7s" }}
         >
           <FeatureChip icon={Smartphone}>{t("hero.pill.devices")}</FeatureChip>
           <FeatureChip icon={InfinityIcon}>{t("hero.pill.traffic")}</FeatureChip>
           <FeatureChip icon={Globe2}>{t("hero.pill.locations")}</FeatureChip>
-          <FeatureChip icon={Shield}>{t("hero.pill.support")}</FeatureChip>
           <FeatureChip icon={CreditCard}>{t("hero.pill.payment")}</FeatureChip>
         </div>
 
@@ -334,6 +359,12 @@ function Pricing() {
 
   const regular = selectedPlan.months * MONTHLY_BASE;
   const savings = regular - selectedPlan.price;
+  const perMonth = Math.round(selectedPlan.price / selectedPlan.months);
+
+  const animPrice = useAnimatedNumber(selectedPlan.price);
+  const animRegular = useAnimatedNumber(regular);
+  const animSavings = useAnimatedNumber(savings);
+  const animPerMonth = useAnimatedNumber(perMonth);
 
   const planFeatures = [
     t("plan.feat.devices"),
@@ -356,8 +387,6 @@ function Pricing() {
 
         <div className="mx-auto mt-10 max-w-3xl">
           <div className="glass-strong relative overflow-hidden rounded-3xl p-8 sm:p-10">
-            <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/20 blur-3xl" />
-            <div className="pointer-events-none absolute -left-16 bottom-0 size-56 rounded-full bg-white/10 blur-3xl" />
 
             <div key={selected} className="animate-plan-in relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -368,18 +397,18 @@ function Pricing() {
                 <h3 className="mt-4 text-2xl font-bold tracking-tight">{t(selectedPlan.labelKey)}</h3>
 
                 <div className="mt-4 flex items-baseline gap-3">
-                  <span className="text-5xl font-black tracking-tight">{formatPrice(selectedPlan.price)}</span>
-                  <span className={`text-base text-muted-foreground line-through ${savings > 0 ? "visible" : "invisible"}`}>
-                    {formatPrice(regular)}
+                  <span className="text-5xl font-black tracking-tight tabular-nums">{formatPrice(animPrice)}</span>
+                  <span className={`text-base text-muted-foreground line-through tabular-nums ${savings > 0 ? "visible" : "invisible"}`}>
+                    {formatPrice(animRegular)}
                   </span>
                 </div>
 
-                <p className={`mt-1 text-sm text-emerald-300 ${savings > 0 ? "visible" : "invisible"}`}>
-                  {t("pricing.savings")} {formatPrice(savings)}
+                <p className={`mt-1 text-sm text-emerald-300 tabular-nums ${savings > 0 ? "visible" : "invisible"}`}>
+                  {t("pricing.savings")} {formatPrice(animSavings)}
                 </p>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  ≈ {formatPrice(Math.round(selectedPlan.price / selectedPlan.months))} {t("pricing.per_month")}
+                <p className="mt-1 text-sm text-muted-foreground tabular-nums">
+                  ≈ {formatPrice(animPerMonth)} {t("pricing.per_month")}
                 </p>
 
                 <ul className="mt-6 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
@@ -432,9 +461,8 @@ function Advantages() {
           {advantages.map(({ icon: Icon, title, text }) => (
             <div
               key={title}
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card/40 p-6 transition hover:border-foreground/15 hover:bg-card/70"
+              className="rounded-2xl border border-border bg-card/40 p-6 transition hover:border-foreground/15 hover:bg-card/70"
             >
-              <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-primary/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
               <div className="relative grid size-10 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
                 <Icon className="size-5" strokeWidth={2} />
               </div>
@@ -523,8 +551,6 @@ function TrialBanner() {
     <section className="py-10">
       <div className="mx-auto max-w-6xl px-4">
         <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-8 sm:px-12">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-16 bottom-0 size-48 rounded-full bg-white/5 blur-2xl" />
           <div className="relative flex flex-col items-center justify-between gap-6 text-center sm:flex-row sm:text-left">
             <div>
               <h2 className="text-2xl font-black tracking-tight text-primary-foreground sm:text-3xl">
@@ -548,18 +574,27 @@ function TrialBanner() {
 
 function HowTo() {
   const { t } = useI18n();
-  const steps = [t("howto.1"), t("howto.2"), t("howto.3")];
+  const steps = [
+    { text: t("howto.1"), icon: CreditCard },
+    { text: t("howto.2"), icon: Smartphone },
+    { text: t("howto.3"), icon: Wifi },
+  ];
   return (
     <section className="relative py-24">
       <div className="mx-auto max-w-6xl px-4">
         <h2 className="text-balance text-center text-4xl font-black tracking-tight sm:text-5xl">
           {t("howto.title")}
         </h2>
-        <div className="mt-14 grid gap-4 sm:grid-cols-3">
-          {steps.map((step, i) => (
-            <div key={i} className="glass rounded-3xl p-7 flex gap-5 items-start">
-              <span className="shrink-0 text-5xl font-black text-primary/25 leading-none select-none">{i + 1}</span>
-              <p className="text-sm leading-relaxed text-muted-foreground pt-1">{step}</p>
+        <div className="mt-10 grid gap-3 sm:grid-cols-3">
+          {steps.map(({ text, icon: Icon }, i) => (
+            <div key={i} className="glass rounded-2xl p-5 flex gap-4 items-start">
+              <div className="shrink-0 mt-0.5 grid size-9 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/15">
+                <Icon className="size-4" strokeWidth={1.8} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-primary/60 mb-1">Шаг {i + 1}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -576,34 +611,34 @@ function Support() {
     { icon: Globe2, text: t("support.card.3") },
   ];
   return (
-    <section className="relative py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="grid gap-10 sm:grid-cols-2 items-center">
-          <div>
-            <h2 className="text-balance text-4xl font-black tracking-tight sm:text-5xl">
-              {t("support.title")}
-            </h2>
-            <p className="mt-4 text-muted-foreground">{t("support.subtitle")}</p>
-            <a
-              href="https://t.me/help_clickbot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary mt-8 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold"
-            >
-              {t("support.cta")}
-              <ArrowRight className="size-4" />
-            </a>
-          </div>
-          <div className="grid gap-3">
+    <section className="relative py-20">
+      <div className="mx-auto max-w-3xl px-4">
+        <div className="glass-strong rounded-3xl p-8 sm:p-12 text-center">
+          <h2 className="text-balance text-3xl font-black tracking-tight sm:text-4xl">
+            {t("support.title")}
+          </h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">{t("support.subtitle")}</p>
+
+          <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
             {cards.map(({ icon: Icon, text }) => (
-              <div key={text} className="glass rounded-2xl p-5 flex items-center gap-4">
-                <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20 shrink-0">
-                  <Icon className="size-5" strokeWidth={1.8} />
+              <div key={text} className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/3 p-4">
+                <div className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
+                  <Icon className="size-4" strokeWidth={1.8} />
                 </div>
-                <p className="text-sm text-muted-foreground">{text}</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{text}</p>
               </div>
             ))}
           </div>
+
+          <a
+            href="https://t.me/help_clickbot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary mt-8 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold"
+          >
+            {t("support.cta")}
+            <ArrowRight className="size-4" />
+          </a>
         </div>
       </div>
     </section>

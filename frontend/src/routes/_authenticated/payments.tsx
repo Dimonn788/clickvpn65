@@ -33,7 +33,7 @@ function PaymentsPage() {
   const { t, locale } = useI18n();
   const { user } = useAuth();
   const [items, setItems] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
