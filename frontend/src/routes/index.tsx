@@ -566,6 +566,9 @@ function TrialBanner() {
               <ArrowRight className="size-4" />
             </Link>
           </div>
+          <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 cursor-default select-none whitespace-nowrap text-xs font-medium text-primary-foreground opacity-0 transition-opacity duration-500 hover:opacity-30">
+            сайт сделан Димоном :)
+          </span>
         </div>
       </div>
     </section>
