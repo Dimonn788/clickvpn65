@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, type ReactNode } from "react";
 import {
   Shield,
   Zap,
@@ -53,14 +53,14 @@ function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <Hero />
-      <Why />
-      <TrialBanner />
-      <Pricing />
-      <HowTo />
-      <Advantages />
-      <Faq />
-      <Support />
-      <Footer />
+      <Reveal><Why /></Reveal>
+      <Reveal><TrialBanner /></Reveal>
+      <Reveal><Pricing /></Reveal>
+      <Reveal><HowTo /></Reveal>
+      <Reveal><Advantages /></Reveal>
+      <Reveal><Faq /></Reveal>
+      <Reveal><Support /></Reveal>
+      <Reveal><Footer /></Reveal>
     </div>
   );
 }
@@ -69,7 +69,7 @@ function Header() {
   const { t } = useI18n();
   const { user } = useAuth();
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50 animate-intro-up" style={{ animationDelay: "0.65s" }}>
       <div className="mx-auto max-w-6xl px-4 pt-4">
         <div className="glass flex items-center justify-between rounded-2xl px-4 py-2.5">
           <Link to="/" className="flex items-center gap-2">
@@ -122,6 +122,36 @@ function Logo() {
   );
 }
 
+function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add("is-visible");
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="reveal"
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
 function FeatureChip({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
@@ -145,17 +175,32 @@ function Hero() {
         <h1
           className="font-black leading-[0.88] tracking-[-0.04em] select-none"
           style={{ fontSize: "clamp(4.5rem, 16vw, 13rem)" }}
+          aria-label="ClickVPN"
         >
-          ClickVPN
+          {"ClickVPN".split("").map((char, i) => (
+            <span
+              key={i}
+              className="animate-letter"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              {char}
+            </span>
+          ))}
         </h1>
 
         {/* Tagline */}
-        <p className="mt-6 text-lg sm:text-2xl font-light tracking-tight text-muted-foreground">
+        <p
+          className="mt-6 text-lg sm:text-2xl font-light tracking-tight text-muted-foreground animate-intro-up"
+          style={{ animationDelay: "0.55s" }}
+        >
           {t("hero.tagline")}
         </p>
 
         {/* Feature chips */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+        <div
+          className="mt-8 flex flex-wrap items-center justify-center gap-2 animate-intro-up"
+          style={{ animationDelay: "0.7s" }}
+        >
           <FeatureChip icon={Smartphone}>{t("hero.pill.devices")}</FeatureChip>
           <FeatureChip icon={InfinityIcon}>{t("hero.pill.traffic")}</FeatureChip>
           <FeatureChip icon={Globe2}>{t("hero.pill.locations")}</FeatureChip>
@@ -164,7 +209,10 @@ function Hero() {
         </div>
 
         {/* CTAs */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div
+          className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-intro-up"
+          style={{ animationDelay: "0.85s" }}
+        >
           <a
             href="#pricing"
             className="btn-primary inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-base font-semibold"

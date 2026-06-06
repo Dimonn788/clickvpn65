@@ -61,7 +61,7 @@ function Overview() {
       toast.success(t("dash.key.copied"));
     } catch (error) {
       console.warn("Clipboard write failed, trying fallback copy:", error);
-      const ok = fallbackCopy(sub.vpn_key);
+      const ok = await fallbackCopy(sub.vpn_key);
       if (ok) {
         toast.success(t("dash.key.copied"));
       } else {
