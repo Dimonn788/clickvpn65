@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import {
   Shield,
   Zap,
@@ -191,17 +191,17 @@ function Why() {
     {
       title: t("why.1.title"),
       icon: Smartphone,
-      items: [t("why.1.a"), t("why.1.b"), t("why.1.c")],
+      items: [t("why.1.a"), t("why.1.b"), t("why.1.c"), t("why.1.d")],
     },
     {
       title: t("why.2.title"),
       icon: Zap,
-      items: [t("why.2.a"), t("why.2.b"), t("why.2.c")],
+      items: [t("why.2.a"), t("why.2.b"), t("why.2.c"), t("why.2.d")],
     },
     {
       title: t("why.3.title"),
       icon: MessageCircle,
-      items: [t("why.3.a"), t("why.3.b"), t("why.3.c")],
+      items: [t("why.3.a"), t("why.3.b"), t("why.3.c"), t("why.3.d")],
     },
   ];
 
@@ -238,6 +238,47 @@ function Why() {
   );
 }
 
+function PlanTabs({ plans, selected, onSelect }: { plans: Plan[]; selected: Plan["months"]; onSelect: (m: Plan["months"]) => void }) {
+  const { t } = useI18n();
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pill, setPill] = useState({ left: 4, width: 0 });
+
+  useEffect(() => {
+    const idx = plans.findIndex(p => p.months === selected);
+    const btn = btnRefs.current[idx];
+    if (btn) setPill({ left: btn.offsetLeft, width: btn.offsetWidth });
+  }, [selected, plans]);
+
+  return (
+    <div className="glass relative inline-flex rounded-2xl p-1">
+      <span
+        className="pointer-events-none absolute inset-y-1 rounded-xl bg-gradient-to-br from-white to-[oklch(0.78_0_0)] shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
+        style={{
+          left: pill.left,
+          width: pill.width,
+          transition: "left 300ms cubic-bezier(0.34, 1.56, 0.64, 1), width 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        }}
+      />
+      {plans.map((p, i) => {
+        const active = p.months === selected;
+        return (
+          <button
+            key={p.months}
+            ref={el => { btnRefs.current[i] = el; }}
+            onClick={() => onSelect(p.months)}
+            className={[
+              "relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200",
+              active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            ].join(" ")}
+          >
+            {t(p.labelKey)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Pricing() {
   const { t } = useI18n();
   const [selected, setSelected] = useState<Plan["months"]>(6);
@@ -262,33 +303,7 @@ function Pricing() {
         </div>
 
         <div className="mt-10 flex justify-center">
-          <div className="glass relative inline-flex rounded-2xl p-1">
-            {/* sliding pill */}
-            <span
-              className="pointer-events-none absolute inset-y-1 rounded-xl bg-gradient-to-br from-white to-[oklch(0.78_0_0)] shadow-[0_8px_24px_-8px_oklch(1_0_0/0.3)]"
-              style={{
-                width: `calc((100% - 8px) / ${PLANS.length})`,
-                left: "4px",
-                transform: `translateX(calc(${PLANS.findIndex(p => p.months === selected)} * 100%))`,
-                transition: "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-              }}
-            />
-            {PLANS.map((p) => {
-              const active = p.months === selected;
-              return (
-                <button
-                  key={p.months}
-                  onClick={() => setSelected(p.months)}
-                  className={[
-                    "relative z-10 rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200",
-                    active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                  ].join(" ")}
-                >
-                  {t(p.labelKey)}
-                </button>
-              );
-            })}
-          </div>
+          <PlanTabs plans={PLANS} selected={selected} onSelect={setSelected} />
         </div>
 
         <div className="mx-auto mt-10 max-w-3xl">
@@ -298,26 +313,22 @@ function Pricing() {
 
             <div key={selected} className="animate-plan-in relative flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                {selectedPlan.badgeKey && (
-                  <span className="inline-flex items-center rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary">
-                    {t(selectedPlan.badgeKey)}
-                  </span>
-                )}
+                <span className={`inline-flex items-center rounded-full bg-primary/15 px-3 py-0.5 text-xs font-semibold text-primary ${selectedPlan.badgeKey ? "visible" : "invisible"}`}>
+                  {selectedPlan.badgeKey ? t(selectedPlan.badgeKey) : " "}
+                </span>
 
                 <h3 className="mt-4 text-2xl font-bold tracking-tight">{t(selectedPlan.labelKey)}</h3>
 
                 <div className="mt-4 flex items-baseline gap-3">
                   <span className="text-5xl font-black tracking-tight">{formatPrice(selectedPlan.price)}</span>
-                  {savings > 0 && (
-                    <span className="text-base text-muted-foreground line-through">{formatPrice(regular)}</span>
-                  )}
+                  <span className={`text-base text-muted-foreground line-through ${savings > 0 ? "visible" : "invisible"}`}>
+                    {formatPrice(regular)}
+                  </span>
                 </div>
 
-                {savings > 0 && (
-                  <p className="mt-1 text-sm text-emerald-300">
-                    {t("pricing.savings")} {formatPrice(savings)}
-                  </p>
-                )}
+                <p className={`mt-1 text-sm text-emerald-300 ${savings > 0 ? "visible" : "invisible"}`}>
+                  {t("pricing.savings")} {formatPrice(savings)}
+                </p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
                   ≈ {formatPrice(Math.round(selectedPlan.price / selectedPlan.months))} {t("pricing.per_month")}
