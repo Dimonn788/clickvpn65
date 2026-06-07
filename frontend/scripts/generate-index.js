@@ -34,9 +34,7 @@ async function main() {
     }
 
     const css = findAsset(/^styles-.*\.css$/) || findAsset(/\.css$/)
-    // TanStack Start calls hydrateRoot(document, ...) from the largest bundle —
-    // never use the first alphabetical index-*.js match, which is a route chunk.
-    const indexJs = findLargestJs()
+    const indexJs = findAsset(/^index-.*\.js$/) || findLargestJs()
 
     if (!indexJs) {
       console.error('No JS asset found in dist/client/assets; skipping index.html generation')
@@ -46,21 +44,21 @@ async function main() {
     const cssLink = css ? `/assets/${css}` : null
     const jsSrc = `/assets/${indexJs}`
 
-    // TanStack Start mounts into `document` (hydrateRoot(document, ...)), so
-    // the HTML must be a minimal valid document — no <div id="root"> wrapper.
     const html = `<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ClickVPN</title>
-  <base href="/" />
-  ${cssLink ? `<link rel="stylesheet" href="${cssLink}" />` : ''}
-  <script type="module" src="${jsSrc}"></script>
-</head>
-<body>
-</body>
-</html>`
+  <html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lovable</title>
+    <base href="/" />
+    ${cssLink ? `<link rel="stylesheet" href="${cssLink}" />` : ''}
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>JavaScript is required to run this app.</noscript>
+    <script type="module" src="${jsSrc}"></script>
+  </body>
+  </html>`
 
     fs.writeFileSync(path.join(distClient, 'index.html'), html, 'utf8')
     console.log('Wrote dist/client/index.html')
