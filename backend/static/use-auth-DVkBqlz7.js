@@ -1,0 +1,1 @@
+import{r as e,p as a}from"./index-TNYksL6r.js";function o(){const[s,t]=e.useState(null),[n,u]=e.useState(!0);return e.useEffect(()=>{a().then(r=>{t(r??null)}).catch(()=>{t(null)}).finally(()=>u(!1))},[]),{user:s,loading:n}}export{o as u};
