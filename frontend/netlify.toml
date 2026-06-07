@@ -1,3 +1,19 @@
 [build]
   publish = "dist/client"
   command = "npm run build"
+
+# Root path: force through SSR function so window.$_TSR is injected even
+# though dist/client/index.html exists (static files take priority without force).
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = true
+
+# All other page routes: SSR function handles them.
+# Static files in /assets/* already exist in publish dir and are served
+# by Netlify CDN before this rule is evaluated (no force needed).
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
